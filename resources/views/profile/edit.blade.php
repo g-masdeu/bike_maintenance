@@ -8,7 +8,7 @@
         </flux:button>
     </a>
 </section>
-<div class="min-h-screen bg-gray-100 dark:bg-gray-900 p-6">
+<div class="h-full bg-gray-100 dark:bg-gray-900 p-6">
     <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Perfil</h1>
     <p class="text-gray-600 dark:text-gray-400 mb-6">Actualitza el teu nom, correu electrònic i imatge de perfil.</p>
 

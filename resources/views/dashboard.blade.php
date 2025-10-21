@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen flex flex-col items-center justify-start bg-gray-100 dark:bg-gray-900 py-10 px-4">
+<div class="flex flex-col items-center justify-start bg-gray-100 dark:bg-gray-900 py-10 px-4">
 
     {{-- Títol i botó Afegir bicicleta --}}
     <div class="w-full max-w-5xl mb-6 flex justify-between items-center">
