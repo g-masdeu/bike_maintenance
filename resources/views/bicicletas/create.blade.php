@@ -6,11 +6,18 @@
 
     <form action="{{ route('bicicletas.store') }}" method="POST">
         @csrf
+
+        <!-- TIPO BICI -->
         <div class="mb-4">
-            <label class="block text-gray-700 dark:text-gray-200">Model</label>
-            <input type="text" name="model" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100" required>
+            <label class="block text-gray-700 dark:text-gray-200">Tipus</label>
+            <select name="tipo_id" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100" required>
+                @foreach($tipos as $tipo)
+                    <option value="{{ $tipo->id }}">{{ $tipo->name }}</option>
+                @endforeach
+            </select>
         </div>
 
+        <!-- MARCA BICI -->
         <div class="mb-4">
             <label class="block text-gray-700 dark:text-gray-200">Marca</label>
             <select name="marca_id" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100" required>
@@ -20,13 +27,10 @@
             </select>
         </div>
 
+        <!-- MODELO BICI -->
         <div class="mb-4">
-            <label class="block text-gray-700 dark:text-gray-200">Tipus</label>
-            <select name="tipo_id" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100" required>
-                @foreach($tipos as $tipo)
-                    <option value="{{ $tipo->id }}">{{ $tipo->name }}</option>
-                @endforeach
-            </select>
+            <label class="block text-gray-700 dark:text-gray-200">Model</label>
+            <input type="text" name="model" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100" required>
         </div>
 
         <div class="mb-4">
