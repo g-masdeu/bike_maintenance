@@ -79,10 +79,12 @@
     <!-- Session Status -->
     <x-auth-session-status class="text-center mb-4" :status="session('status')" />
 
-    <form method="POST" wire:submit="login">
+    <form method="POST" action="{{ route('login') }}">
+        @csrf
+
         <!-- Correu electrònic -->
         <flux:input
-            wire:model="email"
+            name="email"
             :label="'Correu electrònic'"
             type="email"
             required
@@ -90,17 +92,20 @@
             autocomplete="email"
             placeholder="exemple@correu.com"
         />
+        @error('email')
+            <div style="color: red; font-size: 0.8rem; margin-top: -0.5rem;">{{ $message }}</div>
+        @enderror
+
 
         <!-- Contrasenya -->
         <div style="position: relative;">
             <flux:input
-                wire:model="password"
+                name="password"
                 :label="'Contrasenya'"
                 type="password"
                 required
                 autocomplete="current-password"
                 placeholder="Contrasenya"
-                viewable
             />
             @if (Route::has('password.request'))
                 <flux:link class="forgot-password" :href="route('password.request')" wire:navigate style="position: absolute; top: 0; right: 0;">
@@ -108,15 +113,21 @@
                 </flux:link>
             @endif
         </div>
+        @error('password')
+            <div style="color: red; font-size: 0.8rem; margin-top: -0.5rem;">{{ $message }}</div>
+        @enderror
+
 
         <!-- Recorda'm -->
         <div class="remember-me">
-            <flux:checkbox wire:model="remember" :label="'Recorda\'m'" />
+            <input type="checkbox" name="remember" id="remember">
+            <label for="remember">Recorda'm</label>
         </div>
 
-        <!-- Botó Iniciar Sessió -->
+        <!-- Botó -->
         <flux:button type="submit">Inicia sessió</flux:button>
     </form>
+
 
     <!-- Enllaç a registre -->
     @if (Route::has('register'))
