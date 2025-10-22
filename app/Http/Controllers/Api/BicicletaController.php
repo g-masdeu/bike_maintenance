@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 
 class BicicletaController extends Controller
 {
+    // Listar bicicletas del usuario
     public function index(Request $request)
     {
         return response()->json(
@@ -15,6 +16,7 @@ class BicicletaController extends Controller
         );
     }
 
+    // Crear bicicleta
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -26,17 +28,24 @@ class BicicletaController extends Controller
             'kms_ultimo_mantenimiento' => 'nullable|integer',
         ]);
 
+        // Inicializamos kms_ultimo_mantenimiento = kms_actuals si no se pasa
+        if (!isset($data['kms_ultimo_mantenimiento'])) {
+            $data['kms_ultimo_mantenimiento'] = $data['kms_actuals'] ?? 0;
+        }
+
         $bicicleta = $request->user()->bicicletas()->create($data);
 
         return response()->json($bicicleta, 201);
     }
 
-    public function show(Bicicleta $bicicleta, Request $request)
+    // Mostrar bicicleta
+    public function show(Bicicleta $bicicleta)
     {
-        $this->authorize('view', $bicicleta); // si vols control de permisos
+        $this->authorize('view', $bicicleta);
         return response()->json($bicicleta->load(['tipo', 'marca', 'mantenimientos']));
     }
 
+    // Actualizar bicicleta
     public function update(Request $request, Bicicleta $bicicleta)
     {
         $this->authorize('update', $bicicleta);
@@ -53,10 +62,11 @@ class BicicletaController extends Controller
         return response()->json($bicicleta);
     }
 
+    // Eliminar bicicleta
     public function destroy(Bicicleta $bicicleta)
     {
         $this->authorize('delete', $bicicleta);
         $bicicleta->delete();
-        return response()->json(['message' => 'Bicicleta eliminada correctament']);
+        return response()->json(['message' => 'Bicicleta eliminada']);
     }
 }

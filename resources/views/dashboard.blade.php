@@ -1,6 +1,17 @@
 @extends('layouts.app')
 
 @section('content')
+<script>
+// Funció que obre un modal amb les dades de la bici
+function verBicicleta(id) {
+    fetch(`/api/bicicletas/${id}`)
+        .then(res => res.json())
+        .then(data => {
+            alert(`Modelo: ${data.model}\nMarca: ${data.marca.name}\nTipo: ${data.tipo.name}\nKms: ${data.kms_actuals}`);
+        });
+}
+</script>
+
 <div class="flex flex-col items-center justify-start bg-gray-100 dark:bg-gray-900 py-10 px-4">
 
     {{-- Títol i botó Afegir bicicleta --}}
@@ -41,7 +52,7 @@
                         <div class="text-sm text-gray-500 dark:text-gray-400">{{ $bicicleta->kms_actuals }} km recorreguts</div>
                     </div>
                     <div class="flex gap-2">
-                        <a href="{{ route('bicicletas.show', $bicicleta) }}" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-500">Veure</a>
+                        <a href="{{ route('bicicletas.show', $bicicleta) }}" target="_blank">Veure</a>
                         <a href="#" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-500">Actualitzar km</a>
                     </div>
                 </div>

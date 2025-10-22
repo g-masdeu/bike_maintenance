@@ -35,12 +35,10 @@ class BicicletaController extends Controller
     {
         $this->checkOwnership($bicicleta);
 
-        if ($request->wantsJson()) {
-            return response()->json($bicicleta->load(['tipo', 'marca', 'mantenimientos']));
-        }
-
-        return view('bicicletas.show', compact('bicicleta'));
+        // Devuelve siempre JSON
+        return response()->json($bicicleta->load(['tipo', 'marca', 'mantenimientos']));
     }
+
 
     // Crear bicicleta nova
     public function store(Request $request)
