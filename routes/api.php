@@ -3,6 +3,9 @@
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\BicicletaController;
 use App\Http\Controllers\Api\MantenimientoController;
+use App\Http\Controllers\Api\TipoBicicletaController;
+use App\Http\Controllers\Api\MarcaBicicletaController;
+use App\Http\Controllers\Api\ModeloBicicletaController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -21,3 +24,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/bicicletas/{bicicleta}/mantenimientos', [MantenimientoController::class, 'index']);
     Route::post('/bicicletas/{bicicleta}/mantenimientos', [MantenimientoController::class, 'store']);
 });
+
+// Tipus de bicicletes
+Route::get('/tipos', [TipoBicicletaController::class, 'index']);
+
+// Marques de bicicletes
+Route::get('/marcas', [MarcaBicicletaController::class, 'index']);
+
+// Models filtrats per tipus i marca
+Route::get('/modelos/{marca}/{tipo}', [ModeloBicicletaController::class, 'show']);

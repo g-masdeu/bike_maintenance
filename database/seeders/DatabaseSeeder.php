@@ -12,8 +12,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(TipoBicicletaSeeder::class);
-        $this->call(MarcaSeeder::class);
+        //$this->call(TipoBicicletaSeeder::class);
+        //$this->call(MarcaSeeder::class);
         $this->call(ModelosBicicletasSeeder::class); 
     }
 }
