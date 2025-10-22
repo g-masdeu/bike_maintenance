@@ -8,16 +8,18 @@
     body, html {
         margin: 0;
         padding: 0;
-        height: 100%;
+        min-height: 100vh;
         font-family: Arial, sans-serif;
         background: linear-gradient(to bottom right, #f5f5f5, #ffffff);
         color: #333;
         overflow: hidden; /* sense scroll */
+        display: flex;
+        flex-direction: column;
     }
     a { text-decoration: none; }
     header {
         display: flex;
-        justify-content: space-between;
+        justify-content: space-between; 
         align-items: center;
         padding: 0.5rem 2rem;
         border-bottom: 1px solid #ddd;
@@ -36,13 +38,13 @@
     nav a.button:hover { background-color: #2563eb; }
 
     .hero-container {
-        height: calc(100% - 50px); /* resta del header */
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         text-align: center;
         padding: 0 1rem;
+        flex:1;
     }
 
     .hero-container h2 {
@@ -96,21 +98,47 @@
     .feature-card .icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
 
     footer {
-        position: absolute;
-        bottom: 0;
-        width: 100%;
         text-align: center;
         font-size: 0.75rem;
         padding: 0.3rem 0;
         background: #fafafa;
         border-top: 1px solid #ddd;
     }
+
+    .fonsHeaderFooter {
+        background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+        background-size: 200% 200%;
+        animation: oceanWave 35s ease-in-out infinite;
+        position: relative;
+        color: white;
+        font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    }
+
+    .fonsHeaderFooter::before {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 70% 50%, rgba(16, 185, 129, 0.08), transparent 70%);
+        animation: underwater 25s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    @keyframes oceanWave {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    @keyframes underwater {
+        0%, 100% { transform: translate(0, 0); opacity: 0.4; }
+        50% { transform: translate(5px, 5px); opacity: 0.7; }
+    }
 </style>
 </head>
 <body>
+    <div class="h-screen">
 
+    </div>
     <!-- Header -->
-    <header>
+    <header class="fonsHeaderFooter">
         <h1>{{ config('app.name', 'Bike Maintenance') }}</h1>
         <nav>
             <a href="{{ route('login') }}">Accedir</a>
@@ -144,7 +172,7 @@
     </div>
 
     <!-- Footer -->
-    <footer>
+    <footer class="fonsHeaderFooter">
         &copy; {{ date('Y') }} {{ config('app.name', 'Bike Maintenance') }} · Fet amb ❤️ amb Laravel
     </footer>
 
