@@ -173,7 +173,7 @@
 
     <!-- Footer -->
     <footer class="fonsHeaderFooter">
-        &copy; {{ date('Y') }} {{ config('app.name', 'Bike Maintenance') }} · Fet amb ❤️ amb Laravel
+        &copy; {{ date('Y') }} {{ config('app.name', 'Bike Maintenance') }} · Guillem Masdeu de Maria
     </footer>
 
 </body>

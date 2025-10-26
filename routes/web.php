@@ -78,7 +78,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/bicicletas', [BicicletaController::class, 'store'])->name('bicicletas.store');
 
     // Mostrar, actualizar y eliminar bicicleta específica
-    Route::get('/bicicletas/detalle/{bicicleta}', [BicicletaController::class, 'show'])->name('bicicletas.show');
     Route::put('/bicicletas/{bicicleta}', [BicicletaController::class, 'update'])->name('bicicletas.update');
     Route::delete('/bicicletas/{bicicleta}', [BicicletaController::class, 'destroy'])->name('bicicletas.destroy');
 
