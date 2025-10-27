@@ -47,6 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Funció per veure la bici
 function verBicicleta(id) {
+  
+  dd($request->user(), Auth::id());
+
   const modal = document.getElementById('modalVer');
   const detalle = document.getElementById('detalleBicicleta');
 

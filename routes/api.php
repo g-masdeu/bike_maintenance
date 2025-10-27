@@ -7,6 +7,24 @@ use App\Http\Controllers\Api\TipoBicicletaController;
 use App\Http\Controllers\Api\MarcaBicicletaController;
 use App\Http\Controllers\Api\ModeloBicicletaController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+
+Route::post('/login', function(Request $request) {
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json(['message' => 'Credenciales incorrectas'], 401);
+    }
+
+    $token = $user->createToken('httpie')->plainTextToken;
+
+    return response()->json([
+        'token' => $token,
+        'user' => $user->only(['id','name','email','role'])
+    ]);
+});
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
