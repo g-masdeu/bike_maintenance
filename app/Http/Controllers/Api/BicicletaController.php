@@ -41,15 +41,12 @@ class BicicletaController extends Controller
     // Mostrar bicicleta
     public function show(Bicicleta $bicicleta)
     {
-        $this->authorize('view', $bicicleta);
         return response()->json($bicicleta->load(['tipo', 'marca', 'mantenimientos']));
     }
 
     // Actualizar bicicleta
     public function update(Request $request, Bicicleta $bicicleta)
     {
-        $this->authorize('update', $bicicleta);
-
         $data = $request->validate([
             'model' => 'sometimes|string|max:255',
             'marca_id' => 'sometimes|exists:marca_bicicletas,id',

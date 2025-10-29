@@ -142,36 +142,36 @@
     <header class="fonsHeaderFooter">
         <h1>{{ config('app.name', 'Bike Maintenance') }}</h1>
         <nav>
-            <a href="{{ route('login') }}">Accedir</a>
-            <a href="{{ route('register') }}" class="button">Registrar-se</a>
+            <a href="{{ route('login') }}">{{ __('messages.login') }}</a>
+            <a href="{{ route('register') }}" class="button">{{ __('messages.register') }}</a>
         </nav>
     </header>
 
-    <!-- Hero + Features en una sola secció vertical -->
+    <!-- Hero -->
     <div class="hero-container">
-        <h2>Gestiona les teves bicicletes</h2>
-        <p>Controla el kilometratge, mantingues un registre de manteniments i rep alertes segons el tipus de bicicleta.</p>
+        <h2>{{ __('messages.hero_title') }}</h2>
+        <p>{{ __('messages.hero_text') }}</p>
         <div class="buttons">
-            <a href="{{ route('register') }}" class="primary">Comença ara</a>
-            <a href="{{ route('login') }}" class="secondary">Ja tens compte?</a>
+            <a href="{{ route('register') }}" class="primary">{{ __('messages.start_now') }}</a>
+            <a href="{{ route('login') }}" class="secondary">{{ __('messages.already_account') }}</a>
         </div>
 
         <div class="features">
             <div class="feature-card">
                 <div class="icon">🚴‍♂️</div>
-                Kilometres
+                {{ __('messages.feature_kilometers') }}
             </div>
             <div class="feature-card">
                 <div class="icon">🛠️</div>
-                Manteniment
+                {{ __('messages.feature_maintenance') }}
             </div>
             <div class="feature-card">
                 <div class="icon">⚡</div>
-                Tipus Bike
+                {{ __('messages.feature_biketype') }}
             </div>
         </div>
     </div>
-
+    
     <!-- Footer -->
     <footer class="fonsHeaderFooter">
         &copy; {{ date('Y') }} {{ config('app.name', 'Bike Maintenance') }} · Guillem Masdeu de Maria

@@ -18,6 +18,9 @@ Route::get('/', function (Request $request) {
     return view('welcome');
 })->name('home');
 
+// Cambio de idioma
+Route::get('lang/{locale}', [App\Http\Controllers\LanguageController::class, 'changeLanguage'])->name('lang.switch');
+
 // Settings (perfil, contraseña, apariencia, 2FA)
 Route::middleware(['auth'])->group(function () {
 
