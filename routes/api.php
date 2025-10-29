@@ -34,7 +34,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Bicicletes CRUD
     Route::get('/bicicletas', [BicicletaController::class, 'index']);
     Route::post('/bicicletas', [BicicletaController::class, 'store']);
-    Route::put('/bicicletas/{bicicleta}', [BicicletaController::class, 'update']);
+
     Route::delete('/bicicletas/{bicicleta}', [BicicletaController::class, 'destroy']);
 
     // Manteniments
@@ -42,8 +42,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/bicicletas/{bicicleta}/mantenimientos', [MantenimientoController::class, 'store']);
 });
 
-    Route::get('/bicicletas/{bicicleta}', [BicicletaController::class, 'show']);
 
+Route::get('/bicicletas/{bicicleta}', [BicicletaController::class, 'show']);
+
+Route::put('/bicicletas/{bicicleta}', [BicicletaController::class, 'update']);
 
 // Tipus de bicicletes
 Route::get('/tipos', [TipoBicicletaController::class, 'index']);
