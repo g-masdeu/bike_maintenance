@@ -1,7 +1,5 @@
 <?php
-
 namespace Database\Seeders;
-
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -20,15 +18,28 @@ class ModelosBicicletasSeeder extends Seeder
         // Estructura de modelos jerárquica: Marca => Tipo => [Modelos]
         $modelos_data = [
             // --- Nivel 1: Marcas Globales y Generalistas (Catálogo Extenso) ---
+            'Merida' => [
+                'Carretera' => [
+                    'Scultura Endurance 4000', 'Scultura 4000', 'Scultura 903 Lampare',
+                    'Reacto 4000', 
+                    'Mission CX 4000', 'Ride 400',
+                ],
+                'Montaña'   => [
+                    'Big Nine 5000', 'One-Twenty 5000', 'One-Forty 5000', 'Eone-Sixty 5000',
+                ],
+                'Gravel'    => ['Silex 400', 'Silex 6000'],
+                'Paseo / Urbana' => ['Crossway Urban 300 EQ', 'Espresso City 300 EQ'],
+                'Eléctrica' => ['eBig.Trail 9000', 'eOne-Sixty 9000', 'eSpresso City 900 EQ'],
+            ],
             'Specialized' => [
                 'Carretera' => [
                     'Tarmac SL8 Comp', 'Tarmac SL8 Expert', 'Tarmac SL7 Pro', 'Tarmac SL6 Sport', // Generaciones Tarmac
                     'Roubaix SL8 Pro', 'Roubaix SL7 Expert', 'Roubaix SL6 Comp', 'Roubaix Sport', 'Roubaix Base', // Generaciones Roubaix mejoradas
-                    'Venge Pro', 'Allez Sprint Comp', 'Aethos Pro',
-                    'Crux Comp', 'Crux Expert',
+                    'Venge Pro', 'Allez Sprint Comp', 'Aethos Pro', 'Aethos Expert', // Otros modelos carretera
+                    'Crux Comp', 'Crux Expert', 'Crux Sport', 'Crux Base', // Modelos Crux
                 ],
                 'Montaña'   => [
-                    'Stumpjumper Comp', 'Stumpjumper EVO Pro', 'Epic HT Comp', 'Epic HT Expert',
+                    'Stumpjumper Comp', 'Stumpjumper EVO Pro', 'Epic HT Comp', 'Epic HT Expert', 
                     'Enduro Comp', 'Enduro Expert', 'Fuse Sport', 'Chisel Comp', 'Kenevo SL Comp',
                 ],
                 'Gravel'    => ['Diverge Comp Carbon', 'Diverge Expert', 'Sequoia', 'Crux S-Works'],
@@ -39,10 +50,11 @@ class ModelosBicicletasSeeder extends Seeder
             ],
             'Trek' => [
                 'Carretera' => [
-                    'Domane SL 7', 'Domane SL 6', 'Domane SL 5',
+                    'Domane SL 7', 'Domane SL 6', 'Domane SL 5', 
                     'Émonda SLR 9', 'Émonda SL 6',
                     'Madone SLR 9', 'Madone SL 7',
                     'Checkpoint SL 7', 'Speed Concept SLR 9', 'Alpha ALR 5',
+                    'Domane ALR 5', 'Domane AL 2', 'FX 3 Disc', 'FX 2 Disc',
                 ],
                 'Montaña'   => [
                     'Fuel EX 9.8', 'Fuel EX 8', 'Slash 9.9', 'Marlin 8', 'Marlin 7',
@@ -268,22 +280,30 @@ class ModelosBicicletasSeeder extends Seeder
         ];
 
         $modelos_a_insertar = [];
-        $now = Carbon::now();
+    $now = Carbon::now();
 
-        foreach ($modelos_data as $marca_nom => $tiposModelos) {
-            // Saltamos si la marca no existe
-            if (!isset($marcas[$marca_nom])) continue;
-            $marca_id = $marcas[$marca_nom];
+    foreach ($modelos_data as $marca_nom => $tiposModelos) {
+        // Saltamos si la marca no existe en la DB
+        if (!isset($marcas[$marca_nom])) continue;
+        $marca_id = $marcas[$marca_nom];
 
-            foreach ($tiposModelos as $tipo_nom => $listaModelos) {
-                // Saltamos si el tipo no existe
-                if (!isset($tipos[$tipo_nom])) continue;
-                $tipo = $tipos[$tipo_nom];
+        foreach ($tiposModelos as $tipo_nom => $listaModelos) {
+            // Saltamos si el tipo no existe en la DB
+            if (!isset($tipos[$tipo_nom])) continue;
+            $tipo_id = $tipos[$tipo_nom];
 
-                foreach ($listaModelos as $modelo_nom) {
+            foreach ($listaModelos as $modelo_nom) {
+                // Insertamos solo si no existe
+                $exists = DB::table('modelo_bicicletas')
+                    ->where('marca_id', $marca_id)
+                    ->where('tipo', $tipo_id)
+                    ->where('nom', $modelo_nom)
+                    ->exists();
+
+                if (!$exists) {
                     $modelos_a_insertar[] = [
                         'marca_id'   => $marca_id,
-                        'tipo'    => $tipo,
+                        'tipo'       => $tipo_id,
                         'nom'        => $modelo_nom,
                         'created_at' => $now,
                         'updated_at' => $now,
@@ -291,9 +311,11 @@ class ModelosBicicletasSeeder extends Seeder
                 }
             }
         }
-
-        // Insertar todos los modelos generados
-        // NOTA: La tabla final se llama 'modelo_bicicletas'
-        DB::table('modelo_bicicletas')->insert($modelos_a_insertar);
     }
+
+            // Insertar en chunks de 500 para no saturar la DB
+    foreach (array_chunk($modelos_a_insertar, 500) as $chunk) {
+        DB::table('modelo_bicicletas')->insert($chunk);
+    }
+}
 }
