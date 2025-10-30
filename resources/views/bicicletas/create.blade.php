@@ -16,6 +16,21 @@ document.addEventListener('DOMContentLoaded', () => {
     resetSelect(marcaSelect, 'Selecciona una marca');
     resetSelect(modeloSelect, 'Selecciona un modelo');
 
+    // Campos condicionales
+    const campos = document.querySelectorAll('[data-tipos]');
+
+    const actualizarCampos = () => {
+        const tipo = tipoSelect.options[tipoSelect.selectedIndex]?.text || '';
+        campos.forEach(campo => {
+            const tiposPermitidos = campo.getAttribute('data-tipos').split(',');
+            if (tiposPermitidos.includes(tipo)) {
+                campo.style.display = 'block';
+            } else {
+                campo.style.display = 'none';
+            }
+        });
+    };
+
     // Fetch tipos
     fetch('/api/tipos', { credentials: 'same-origin' })
         .then(res => res.json())
@@ -30,6 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fetch marcas al cambiar tipo
     tipoSelect.addEventListener('change', () => {
+        actualizarCampos();
+
         const tipo = tipoSelect.value;
         resetSelect(marcaSelect, 'Selecciona una marca');
         resetSelect(modeloSelect, 'Selecciona un modelo');
@@ -75,10 +92,10 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="max-w-md mx-auto mt-3 p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
     <h1 class="text-2xl text-center font-semibold mb-4 text-gray-800 dark:text-gray-100">Afegir una bicicleta nova</h1>
 
-    <!-- FORMULARIO NORMAL -->
     <form action="{{ route('bicicletas.store') }}" method="POST">
         @csrf
 
+        <!-- Tipo -->
         <div class="mb-4">
             <label for="tipo_id" class="block text-gray-700 dark:text-gray-200">Tipus</label>
             <select id="tipo_id" name="tipo_id" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100" required>
@@ -86,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </select>
         </div>
 
+        <!-- Marca -->
         <div class="mb-4">
             <label for="marca_id" class="block text-gray-700 dark:text-gray-200">Marca</label>
             <select id="marca_id" name="marca_id" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100" required>
@@ -93,6 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </select>
         </div>
 
+        <!-- Modelo -->
         <div class="mb-4">
             <label for="modelo_id" class="block text-gray-700 dark:text-gray-200">Model</label>
             <select id="modelo_id" name="model" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100" required>
@@ -100,18 +119,20 @@ document.addEventListener('DOMContentLoaded', () => {
             </select>
         </div>
 
-        <div class="mb-4">
+        <!-- Fecha de compra -->
+        <div class="mb-4" data-tipos="Carretera,Montaña,Gravel,Paseo / Urbana,Eléctrica,Fat Bike,BMX,Plegable">
             <label for="data_compra" class="block text-gray-700 dark:text-gray-200">Data de compra</label>
             <input type="date" name="data_compra" id="data_compra" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100" required>
         </div>
 
-        <div class="mb-4">
+        <!-- Kilómetros actuales -->
+        <div class="mb-4" data-tipos="Carretera,Montaña,Gravel,Paseo / Urbana,Eléctrica,Fat Bike,BMX,Plegable">
             <label for="kms_actuals" class="block text-gray-700 dark:text-gray-200">Kilometres actuals</label>
             <input type="number" name="kms_actuals" id="kms_actuals" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100" value="0">
         </div>
 
-        <!-- ESPECIFICACIONES -->
-        <div class="mb-4">
+        <!-- Tipo de freno -->
+        <div class="mb-4" data-tipos="Carretera,Montaña,Gravel,Paseo / Urbana,Eléctrica,Fat Bike,BMX">
             <label for="tipo_freno" class="block text-gray-700 dark:text-gray-200">Tipo de freno</label>
             <select name="tipo_freno" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100">
                 <option value="">Selecciona un tipo</option>
@@ -121,7 +142,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </select>
         </div>
 
-        <div class="mb-4">
+        <!-- Suspensión -->
+        <div class="mb-4" data-tipos="Montaña,Gravel">
             <label for="suspension" class="block text-gray-700 dark:text-gray-200">Suspensión</label>
             <select name="suspension" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100">
                 <option value="">Selecciona un tipo</option>
@@ -131,12 +153,14 @@ document.addEventListener('DOMContentLoaded', () => {
             </select>
         </div>
 
-        <div class="mb-4">
+        <!-- Rodado -->
+        <div class="mb-4" data-tipos="Montaña,Gravel,Fat Bike">
             <label for="rodado" class="block text-gray-700 dark:text-gray-200">Rodado (pulgadas)</label>
             <input type="number" name="rodado" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100">
         </div>
 
-        <div class="mb-4">
+        <!-- Material del cuadro -->
+        <div class="mb-4" data-tipos="Carretera,Montaña,Gravel,Paseo / Urbana,Eléctrica,Fat Bike">
             <label for="material_cuadro" class="block text-gray-700 dark:text-gray-200">Material del cuadro</label>
             <select name="material_cuadro" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100">
                 <option value="">Selecciona un material</option>
@@ -147,7 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </select>
         </div>
 
-        <div class="mb-4">
+        <!-- Tipo de transmisión -->
+        <div class="mb-4" data-tipos="Montaña,Gravel,Carretera">
             <label for="tipo_transmision" class="block text-gray-700 dark:text-gray-200">Tipo de transmisión</label>
             <select name="tipo_transmision" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100">
                 <option value="">Selecciona un tipo</option>
