@@ -40,4 +40,10 @@ class Bicicleta extends Model
             ->withPivot('fecha_realizado', 'kms_al_realizar')
             ->withTimestamps();
     }
+    
+    public function especificacion()
+    {
+        return $this->belongsTo(EspecificacionBicicleta::class, 'especificacion_id');
+    }
+
 }

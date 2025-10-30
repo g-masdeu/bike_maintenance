@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const marcaSelect = document.getElementById('marca_id');
     const modeloSelect = document.getElementById('modelo_id');
 
-    // Función para limpiar select
     const resetSelect = (select, placeholder) => {
         select.innerHTML = `<option value="">${placeholder}</option>`;
     }
@@ -21,10 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/tipos', { credentials: 'same-origin' })
         .then(res => res.json())
         .then(tipos => {
-            console.log('Tipos:', tipos);
             tipos.forEach(tipo => {
                 const option = document.createElement('option');
-                option.value = tipo.id; // columna 'nom' de la tabla
+                option.value = tipo.id;
                 option.textContent = tipo.nom;
                 tipoSelect.appendChild(option);
             });
@@ -41,7 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('/api/marcas', { credentials: 'same-origin' })
             .then(res => res.json())
             .then(marcas => {
-                console.log('Marcas:', marcas);
                 marcas.forEach(marca => {
                     const option = document.createElement('option');
                     option.value = marca.id;
@@ -60,13 +57,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!tipo || !marcaId) return;
 
-        // 🔹 Cambiado a ruta con segmentos
-        console.log("Marca --> " + marcaId);
-        console.log("Tipo --> " + tipo);
         fetch(`/api/modelos/${marcaId}/${encodeURIComponent(tipo)}`, { credentials: 'same-origin' })
             .then(res => res.json())
             .then(modelos => {
-                console.log('Modelos:', modelos);
                 modelos.forEach(modelo => {
                     const option = document.createElement('option');
                     option.value = modelo.nom;
@@ -76,39 +69,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     });
 
-    const form = document.querySelector('form');
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const data = {
-            tipo_id: document.getElementById('tipo_id').value,
-            marca_id: document.getElementById('marca_id').value,
-            model: document.getElementById('modelo_id').value,
-            data_compra: document.getElementById('data_compra').value,
-            kms_actuals: document.getElementById('kms_actuals').value,
-            kms_ultimo_mantenimiento: document.getElementById('kms_actuals').value // inicial igual a actual
-        };
-
-        fetch('/api/bicicletas', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify(data)
-        })
-        .then(res => res.json())
-        .then(response => console.log('Bicicleta creada:', response))
-        .catch(err => console.error(err));
-    });
-
 });
 </script>
 
 <div class="max-w-md mx-auto mt-3 p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
     <h1 class="text-2xl text-center font-semibold mb-4 text-gray-800 dark:text-gray-100">Afegir una bicicleta nova</h1>
 
+    <!-- FORMULARIO NORMAL -->
     <form action="{{ route('bicicletas.store') }}" method="POST">
         @csrf
 
@@ -127,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
 
         <div class="mb-4">
-            <label for="modelo" class="block text-gray-700 dark:text-gray-200">Model</label>
+            <label for="modelo_id" class="block text-gray-700 dark:text-gray-200">Model</label>
             <select id="modelo_id" name="model" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100" required>
                 <option value="">Selecciona un modelo</option>
             </select>
@@ -141,6 +108,53 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="mb-4">
             <label for="kms_actuals" class="block text-gray-700 dark:text-gray-200">Kilometres actuals</label>
             <input type="number" name="kms_actuals" id="kms_actuals" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100" value="0">
+        </div>
+
+        <!-- ESPECIFICACIONES -->
+        <div class="mb-4">
+            <label for="tipo_freno" class="block text-gray-700 dark:text-gray-200">Tipo de freno</label>
+            <select name="tipo_freno" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100">
+                <option value="">Selecciona un tipo</option>
+                <option value="disco_hidraulico">Disco hidráulico</option>
+                <option value="disco_mecanico">Disco mecánico</option>
+                <option value="zapata">Zapata</option>
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label for="suspension" class="block text-gray-700 dark:text-gray-200">Suspensión</label>
+            <select name="suspension" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100">
+                <option value="">Selecciona un tipo</option>
+                <option value="delantera">Delantera</option>
+                <option value="full">Full</option>
+                <option value="ninguna">Ninguna</option>
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label for="rodado" class="block text-gray-700 dark:text-gray-200">Rodado (pulgadas)</label>
+            <input type="number" name="rodado" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100">
+        </div>
+
+        <div class="mb-4">
+            <label for="material_cuadro" class="block text-gray-700 dark:text-gray-200">Material del cuadro</label>
+            <select name="material_cuadro" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100">
+                <option value="">Selecciona un material</option>
+                <option value="aluminio">Aluminio</option>
+                <option value="carbono">Carbono</option>
+                <option value="acero">Acero</option>
+                <option value="titanio">Titanio</option>
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label for="tipo_transmision" class="block text-gray-700 dark:text-gray-200">Tipo de transmisión</label>
+            <select name="tipo_transmision" class="w-full px-3 py-2 rounded border dark:bg-gray-700 dark:text-gray-100">
+                <option value="">Selecciona un tipo</option>
+                <option value="1x">1x</option>
+                <option value="2x">2x</option>
+                <option value="3x">3x</option>
+            </select>
         </div>
 
         <div class="flex justify-center">

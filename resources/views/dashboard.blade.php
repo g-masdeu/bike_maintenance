@@ -82,8 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(data => {
         detalle.innerHTML = `
           <p><strong>Modelo:</strong> ${data.model}</p>
-          <p><strong>Marca:</strong> ${data.marca.name}</p>
-          <p><strong>Tipo:</strong> ${data.tipo.name}</p>
+          <p><strong>Marca:</strong> ${data.marca.nom}</p>
+          <p><strong>Tipo:</strong> ${data.tipo.nom}</p>
           <p><strong>Kms actuales:</strong> ${data.kms_actuals}</p>
           <p><strong>Kms último mantenimiento:</strong> ${data.kms_ultimo_mantenimiento}</p>
         `;
