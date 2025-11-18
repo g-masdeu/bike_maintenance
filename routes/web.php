@@ -4,7 +4,7 @@ use App\Http\Controllers\BicicletaController;
 use App\Http\Controllers\MantenimientoController;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
-use App\Livewire\Settings\TwoFactor;
+use App\Livewire\Settings\TwoFactor; // Esta línea ES correcta aunque Intelephense la marque
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use Illuminate\Http\Request;
@@ -18,6 +18,11 @@ Route::get('/', function (Request $request) {
     return view('welcome');
 })->name('home');
 
+Route::middleware(['auth'])->get('/dashboard', function (Request $request) {
+    $bicicletas = $request->user()->bicicletas;
+    return view('dashboard', compact('bicicletas'));
+})->name('dashboard');
+
 // Cambio de idioma
 Route::get('lang/{locale}', [App\Http\Controllers\LanguageController::class, 'changeLanguage'])->name('lang.switch');
 
@@ -26,7 +31,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Mostrar formulario de perfil
     Route::get('settings/profile', function () {
-        return view('profile.edit'); // tu nueva vista
+        return view('profile.edit');
     })->name('settings.profile');
 
     // Actualizar perfil
@@ -34,7 +39,7 @@ Route::middleware(['auth'])->group(function () {
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
-            'profile_photo' => 'nullable|image|max:2048', // máximo 2MB
+            'profile_photo' => 'nullable|image|max:2048',
         ]);
 
         $user = $request->user();
@@ -43,7 +48,7 @@ Route::middleware(['auth'])->group(function () {
 
         if ($request->hasFile('profile_photo')) {
             $path = $request->file('profile_photo')->store('profile-photos', 'public');
-            $user->profile_photo_path = $path; // asegurarse que el modelo User tenga este campo
+            $user->profile_photo_path = $path;
         }
 
         $user->save();
@@ -55,17 +60,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/password', Password::class)->name('settings.password');
     Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
 
-    // Two-Factor
-    Route::get('settings/two-factor', TwoFactor::class)
-        ->middleware(
-            when(
-                Features::canManageTwoFactorAuthentication()
-                    && Features::optionEnabled(Features::twoFactorAuthentication(), 'confirmPassword'),
-                ['password.confirm'],
-                [],
-            ),
-        )
-        ->name('two-factor.show');
+    // Two-Factor - SOLUCIÓN CORRECTA
+    Route::middleware(['password.confirm'])->group(function () {
+        Route::get('settings/two-factor', TwoFactor::class)->name('two-factor.show');
+    });
 });
 
 // Bicicletas y mantenimientos

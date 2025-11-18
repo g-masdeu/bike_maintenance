@@ -1,44 +1,63 @@
-@extends('layouts.app')
 
-@section('content')
+
+<?php $__env->startSection('content'); ?>
 <div class="bg-gray-100 dark:bg-gray-900 px-4 py-4">
   
-  {{-- Header con botón y título --}}
+  
   <div class="max-w-6xl mx-auto mb-4">
     <div class="flex items-center justify-between">
-      {{-- Botón de volver --}}
-      <a href="{{ route('home') }}">
-        <flux:button variant="outline" icon="arrow-left">
-          {{ __('Tornar') }}
-        </flux:button>
+      
+      <a href="<?php echo e(route('home')); ?>">
+        <?php if (isset($component)) { $__componentOriginalc04b147acd0e65cc1a77f86fb0e81580 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalc04b147acd0e65cc1a77f86fb0e81580 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'e60dd9d2c3a62d619c9acb38f20d5aa5::button.index','data' => ['variant' => 'outline','icon' => 'arrow-left']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('flux::button'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['variant' => 'outline','icon' => 'arrow-left']); ?>
+          <?php echo e(__('Tornar')); ?>
+
+         <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalc04b147acd0e65cc1a77f86fb0e81580)): ?>
+<?php $attributes = $__attributesOriginalc04b147acd0e65cc1a77f86fb0e81580; ?>
+<?php unset($__attributesOriginalc04b147acd0e65cc1a77f86fb0e81580); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalc04b147acd0e65cc1a77f86fb0e81580)): ?>
+<?php $component = $__componentOriginalc04b147acd0e65cc1a77f86fb0e81580; ?>
+<?php unset($__componentOriginalc04b147acd0e65cc1a77f86fb0e81580); ?>
+<?php endif; ?>
       </a>
 
-      {{-- Título centrado --}}
+      
       <div class="absolute left-1/2 transform -translate-x-1/2 text-center">
         <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">Perfil</h1>
       </div>
 
-      {{-- Espaciador invisible para mantener balance --}}
+      
       <div class="w-24"></div>
     </div>
   </div>
 
-  {{-- Contenedor principal - Grid de 2 columnas --}}
+  
   <div class="max-w-6xl mx-auto">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
       
-      {{-- Columna izquierda: Imagen de perfil --}}
+      
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 flex flex-col items-center justify-center">
         <div class="text-center">
           <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Imatge de perfil</h2>
           
-          <form action="{{ route('settings.profile.update') }}" method="POST" enctype="multipart/form-data" id="profileForm">
-            @csrf
-            @method('PUT')
+          <form action="<?php echo e(route('settings.profile.update')); ?>" method="POST" enctype="multipart/form-data" id="profileForm">
+            <?php echo csrf_field(); ?>
+            <?php echo method_field('PUT'); ?>
             
             <div class="mb-4">
               <div class="w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-gray-200 dark:border-gray-600 shadow-lg mb-3">
-                <img src="{{ auth()->user()->profile_photo_url ?? asset('default-avatar.png') }}" 
+                <img src="<?php echo e(auth()->user()->profile_photo_url ?? asset('default-avatar.png')); ?>" 
                      alt="Profile" 
                      class="w-full h-full object-cover"
                      id="profilePreview">
@@ -65,12 +84,12 @@
         </div>
       </div>
 
-      {{-- Columna derecha: Información personal --}}
+      
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 flex flex-col justify-center">
         <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Informació personal</h2>
         
         <div class="space-y-4">
-          {{-- Nom --}}
+          
           <div>
             <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Nom
@@ -78,7 +97,7 @@
             <input type="text" 
                    id="name"
                    name="name" 
-                   value="{{ auth()->user()->name }}" 
+                   value="<?php echo e(auth()->user()->name); ?>" 
                    required
                    form="profileForm"
                    class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 
@@ -86,12 +105,19 @@
                           text-gray-900 dark:text-gray-100
                           focus:ring-2 focus:ring-gray-400 focus:border-transparent
                           transition-all duration-200">
-            @error('name')
-              <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-            @enderror
+            <?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+              <p class="mt-1 text-sm text-red-600 dark:text-red-400"><?php echo e($message); ?></p>
+            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
           </div>
 
-          {{-- Correu electrònic --}}
+          
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Correu electrònic
@@ -99,7 +125,7 @@
             <input type="email" 
                    id="email"
                    name="email" 
-                   value="{{ auth()->user()->email }}" 
+                   value="<?php echo e(auth()->user()->email); ?>" 
                    required
                    form="profileForm"
                    class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 
@@ -107,14 +133,21 @@
                           text-gray-900 dark:text-gray-100
                           focus:ring-2 focus:ring-gray-400 focus:border-transparent
                           transition-all duration-200">
-            @error('email')
-              <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-            @enderror
+            <?php $__errorArgs = ['email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+              <p class="mt-1 text-sm text-red-600 dark:text-red-400"><?php echo e($message); ?></p>
+            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
           </div>
 
-          {{-- Botones de acción --}}
+          
           <div class="flex justify-end gap-3 pt-3">
-            <a href="{{ route('home') }}" 
+            <a href="<?php echo e(route('home')); ?>" 
                class="px-6 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 
                       rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 
                       transition-all duration-300 font-medium">
@@ -133,7 +166,7 @@
 
     </div>
 
-    {{-- Sección de cambio de contraseña - Ancho completo --}}
+    
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
       <div class="max-w-2xl mx-auto">
         <div class="flex items-center gap-3 mb-6">
@@ -143,12 +176,12 @@
           <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Canviar contrasenya</h2>
         </div>
 
-        <form action="{{ route('settings.password.update') }}" method="POST" id="passwordForm">
-          @csrf
-          @method('PUT')
+        <form action="<?php echo e(route('settings.password.update')); ?>" method="POST" id="passwordForm">
+          <?php echo csrf_field(); ?>
+          <?php echo method_field('PUT'); ?>
           
           <div class="space-y-4">
-            {{-- Contraseña actual --}}
+            
             <div>
               <label for="current_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Contrasenya actual
@@ -176,12 +209,19 @@
                   </svg>
                 </button>
               </div>
-              @error('current_password')
-                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-              @enderror
+              <?php $__errorArgs = ['current_password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400"><?php echo e($message); ?></p>
+              <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Nueva contraseña --}}
+            
             <div>
               <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Nova contrasenya
@@ -212,7 +252,7 @@
                 </button>
               </div>
               
-              {{-- Indicador de fortaleza de contraseña --}}
+              
               <div x-data="{ strength: 0, text: '' }" class="mt-2">
                 <div class="flex gap-1 mb-1">
                   <div class="h-1 flex-1 rounded-full bg-gray-200 dark:bg-gray-700" 
@@ -230,12 +270,19 @@
               <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
                 Mínim 8 caràcters, inclou majúscules, minúscules, números i símbols
               </p>
-              @error('password')
-                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-              @enderror
+              <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400"><?php echo e($message); ?></p>
+              <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Confirmar nueva contraseña --}}
+            
             <div>
               <label for="password_confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Confirmar nova contrasenya
@@ -263,12 +310,19 @@
                   </svg>
                 </button>
               </div>
-              @error('password_confirmation')
-                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-              @enderror
+              <?php $__errorArgs = ['password_confirmation'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400"><?php echo e($message); ?></p>
+              <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Botón para cambiar contraseña --}}
+            
             <div class="flex justify-end pt-4">
               <button type="submit" 
                       class="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-700 text-white 
@@ -288,7 +342,7 @@
 
   </div>
 
-  {{-- Scripts --}}
+  
   <script>
     // Preview de imagen
     function previewImage(event) {
@@ -337,4 +391,5 @@
   </script>
 
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\daw\dwm\bike_maintenance\resources\views/profile/edit.blade.php ENDPATH**/ ?>

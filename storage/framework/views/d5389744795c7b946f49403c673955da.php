@@ -1,16 +1,47 @@
-{{-- resources/views/components/layouts/app.blade.php --}}
-@props([
+
+<?php $attributes ??= new \Illuminate\View\ComponentAttributeBag;
+
+$__newAttributes = [];
+$__propNames = \Illuminate\View\ComponentAttributeBag::extractPropNames(([
     'heading' => config('app.name', 'Bike Maintenance'),
     'subheading' => null,
-])
+]));
+
+foreach ($attributes->all() as $__key => $__value) {
+    if (in_array($__key, $__propNames)) {
+        $$__key = $$__key ?? $__value;
+    } else {
+        $__newAttributes[$__key] = $__value;
+    }
+}
+
+$attributes = new \Illuminate\View\ComponentAttributeBag($__newAttributes);
+
+unset($__propNames);
+unset($__newAttributes);
+
+foreach (array_filter(([
+    'heading' => config('app.name', 'Bike Maintenance'),
+    'subheading' => null,
+]), 'is_string', ARRAY_FILTER_USE_KEY) as $__key => $__value) {
+    $$__key = $$__key ?? $__value;
+}
+
+$__defined_vars = get_defined_vars();
+
+foreach ($attributes->all() as $__key => $__value) {
+    if (array_key_exists($__key, $__defined_vars)) unset($$__key);
+}
+
+unset($__defined_vars, $__key, $__value); ?>
 
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $heading }}</title>
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <title><?php echo e($heading); ?></title>
 
     <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -48,7 +79,7 @@
         }
     </style>
 
-    @stack('styles')
+    <?php echo $__env->yieldPushContent('styles'); ?>
 </head>
 
 <body class="min-h-screen flex flex-col antialiased bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -57,27 +88,27 @@
     <header class="fonsHeaderFooter flex justify-between items-center p-4 border-b border-white/20 relative">
         <!-- Logo / nombre -->
         <div class="flex flex-col">
-            <h1 class="text-lg font-semibold">{{ $heading }}</h1>
-            @if($subheading)
-                <p class="text-sm opacity-90">{{ $subheading }}</p>
-            @endif
+            <h1 class="text-lg font-semibold"><?php echo e($heading); ?></h1>
+            <?php if($subheading): ?>
+                <p class="text-sm opacity-90"><?php echo e($subheading); ?></p>
+            <?php endif; ?>
         </div>
 
         <!-- Avatar y dropdown -->
-        @auth
+        <?php if(auth()->guard()->check()): ?>
             <div class="relative" x-data="{ open: false }">
                 <!-- Avatar -->
                 <button @click="open = !open"
                     class="w-10 h-10 rounded-full overflow-hidden border-2 border-white/50 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all hover:border-white"
                     aria-label="Menú de usuario" aria-expanded="false" x-bind:aria-expanded="open.toString()">
-                    @if (Auth::user()->profile_photo_path)
-                        <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}"
-                            alt="Avatar de {{ Auth::user()->name }}" class="w-full h-full object-cover">
-                    @else
-                        <img src="{{ asset('images/default-avatar.png') }}" alt="Avatar por defecto"
+                    <?php if(Auth::user()->profile_photo_path): ?>
+                        <img src="<?php echo e(asset('storage/' . Auth::user()->profile_photo_path)); ?>"
+                            alt="Avatar de <?php echo e(Auth::user()->name); ?>" class="w-full h-full object-cover">
+                    <?php else: ?>
+                        <img src="<?php echo e(asset('images/default-avatar.png')); ?>" alt="Avatar por defecto"
                             class="w-full h-full object-cover"
-                            onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=0D8ABC&color=fff'">
-                    @endif
+                            onerror="this.src='https://ui-avatars.com/api/?name=<?php echo e(urlencode(Auth::user()->name)); ?>&background=0D8ABC&color=fff'">
+                    <?php endif; ?>
                 </button>
 
                 <!-- Dropdown -->
@@ -88,13 +119,13 @@
                     class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
                     style="display: none;">
                     <div class="py-1">
-                        <a href="{{ route('settings.profile') }}"
+                        <a href="<?php echo e(route('settings.profile')); ?>"
                             class="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
                             <span>✏️</span>
                             <span>Editar perfil</span>
                         </a>
-                        <form method="POST" action="{{ route('logout') }}" class="border-t border-gray-200">
-                            @csrf
+                        <form method="POST" action="<?php echo e(route('logout')); ?>" class="border-t border-gray-200">
+                            <?php echo csrf_field(); ?>
                             <button type="submit"
                                 class="flex items-center gap-2 w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
                                 <span>🚪</span>
@@ -104,32 +135,34 @@
                     </div>
                 </div>
             </div>
-        @endauth
+        <?php endif; ?>
     </header>
 
     <!-- Main content -->
     <main class="flex-grow container mx-auto p-4">
         <!-- Mensajes flash -->
-        @if (session('success'))
+        <?php if(session('success')): ?>
             <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-                {{ session('success') }}
-            </div>
-        @endif
+                <?php echo e(session('success')); ?>
 
-        @if (session('error'))
+            </div>
+        <?php endif; ?>
+
+        <?php if(session('error')): ?>
             <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-                {{ session('error') }}
-            </div>
-        @endif
+                <?php echo e(session('error')); ?>
 
-        @yield('content')
+            </div>
+        <?php endif; ?>
+
+        <?php echo $__env->yieldContent('content'); ?>
     </main>
 
     <!-- Footer -->
     <footer class="fonsHeaderFooter text-center text-sm p-2 border-t border-white/20">
-        &copy; {{ date('Y') }} {{ config('app.name', 'Bike Maintenance') }} · Guillem Masdeu de Maria
+        &copy; <?php echo e(date('Y')); ?> <?php echo e(config('app.name', 'Bike Maintenance')); ?> · Guillem Masdeu de Maria
     </footer>
 
-    @stack('scripts')
+    <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
-</html>
+</html><?php /**PATH C:\daw\dwm\bike_maintenance\resources\views/layouts/app.blade.php ENDPATH**/ ?>
