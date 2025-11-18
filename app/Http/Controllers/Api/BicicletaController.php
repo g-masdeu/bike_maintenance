@@ -56,6 +56,16 @@ class BicicletaController extends Controller
         ]);
 
         $bicicleta->update($data);
+
+        $kmsIntervals = $bicicleta->kms_actuals - $bicicleta->kms_ultimo_mantenimiento;
+        $timeIntervals = now()->diffInDays($bicicleta->data_ultimo_mantenimiento);
+
+        if ($kmsIntervals >= 300) {
+            $bicicleta->kms_ultimo_mantenimiento = $bicicleta->kms_actuals;
+
+        }
+
+        $bicicleta->save();
         return response()->json($bicicleta);
     }
 

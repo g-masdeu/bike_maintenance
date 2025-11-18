@@ -11,7 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
-Route::post('/login', function(Request $request) {
+// 🔐 Login
+Route::post('/login', function (Request $request) {
     $user = User::where('email', $request->email)->first();
 
     if (!$user || !Hash::check($request->password, $user->password)) {
@@ -22,36 +23,30 @@ Route::post('/login', function(Request $request) {
 
     return response()->json([
         'token' => $token,
-        'user' => $user->only(['id','name','email','role'])
+        'user' => $user->only(['id', 'name', 'email', 'role']),
     ]);
 });
 
+// 🔒 Rutas protegidas con autenticación Sanctum
 Route::middleware(['auth:sanctum'])->group(function () {
 
-    // Usuari autenticat
+    // 👤 Usuario autenticado
     Route::get('/user', [UserController::class, 'show']);
 
-    // Bicicletes CRUD
+    // 🚴‍♂️ Bicicletas CRUD
     Route::get('/bicicletas', [BicicletaController::class, 'index']);
     Route::post('/bicicletas', [BicicletaController::class, 'store']);
-
+    Route::get('/bicicletas/{bicicleta}', [BicicletaController::class, 'show']);
     Route::delete('/bicicletas/{bicicleta}', [BicicletaController::class, 'destroy']);
 
-    // Manteniments
+    // 🛠️ Mantenimientos (historial + registro + comprobación)
     Route::get('/bicicletas/{bicicleta}/mantenimientos', [MantenimientoController::class, 'index']);
     Route::post('/bicicletas/{bicicleta}/mantenimientos', [MantenimientoController::class, 'store']);
+    Route::get('/bicicletas/{bicicleta}/mantenimientos/check', [MantenimientoController::class, 'checkNecesidad']);
 });
 
-
-Route::get('/bicicletas/{bicicleta}', [BicicletaController::class, 'show']);
-
+// 🏷️ Tipos, marcas y modelos públicos
 Route::put('/bicicletas/{bicicleta}', [BicicletaController::class, 'update']);
-
-// Tipus de bicicletes
 Route::get('/tipos', [TipoBicicletaController::class, 'index']);
-
-// Marques de bicicletes
 Route::get('/marcas', [MarcaBicicletaController::class, 'index']);
-
-// Models filtrats per tipus i marca
 Route::get('/modelos/{marca}/{tipo}', [ModeloBicicletaController::class, 'show']);
