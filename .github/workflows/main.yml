@@ -1,0 +1,60 @@
+name: Laravel CI
+
+# Define los eventos que dispararán este workflow
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+# Define los jobs que se ejecutarán
+jobs:
+  laravel-tests:
+    runs-on: ubuntu-latest # El entorno donde se ejecutarán las acciones
+
+    services:
+      # Configura un contenedor de MySQL para las pruebas
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
+          MYSQL_DATABASE: testing
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - name: ⬇️ Checkout del código
+      uses: actions/checkout@v4
+
+    - name: ⚙️ Configurar PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2' # Asegúrate de usar la versión correcta de PHP
+        extensions: imagick, mbstring, pdo_mysql, bcmath, fileinfo, gd, ext-ctype, xml
+        ini-values: post_max_size=256M, upload_max_filesize=256M
+        coverage: none # Puedes cambiar a 'xdebug' si necesitas cobertura de código
+
+    - name: 📦 Instalar dependencias de Composer
+      run: composer install --prefer-dist --no-progress
+
+    - name: 📄 Configurar el Entorno (.env)
+      run: cp .env.example .env
+
+    - name: 🔑 Generar clave de aplicación
+      run: php artisan key:generate
+
+    - name: 🛠️ Configurar las variables de la base de datos de prueba
+      run: |
+        sed -i 's/DB_CONNECTION=mysql/DB_CONNECTION=mysql/' .env
+        sed -i 's/DB_HOST=127.0.0.1/DB_HOST=127.0.0.1/' .env
+        sed -i 's/DB_PORT=3306/DB_PORT=3306/' .env
+        sed -i 's/DB_DATABASE=laravel/DB_DATABASE=testing/' .env
+        sed -i 's/DB_USERNAME=root/DB_USERNAME=root/' .env
+        sed -i 's/DB_PASSWORD=/DB_PASSWORD=/' .env
+
+    - name: 🔄 Ejecutar Migraciones y Seeds (si tienes seeds)
+      run: php artisan migrate --env=testing
+
+    - name: 🧪 Ejecutar pruebas de PHPUnit
+      run: vendor/bin/phpunit
