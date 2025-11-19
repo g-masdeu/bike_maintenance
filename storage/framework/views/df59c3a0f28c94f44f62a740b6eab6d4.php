@@ -1,6 +1,6 @@
 <div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex">
     
-    <?php if(auth()->guard()->check()): ?>
+    <!--[if BLOCK]><![endif]--><?php if(auth()->guard()->check()): ?>
     <aside class="fixed inset-y-0 left-0 w-64 border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 flex flex-col">
         <div class="p-4">
             <a href="<?php echo e(route('home')); ?>" class="flex items-center space-x-2">
@@ -30,9 +30,9 @@
 
         <nav class="flex-1 px-2 space-y-1 mt-4">
             <a href="<?php echo e(route('home')); ?>" class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700">Inici</a>
-            <?php if(Route::has('dashboard')): ?>
+            <!--[if BLOCK]><![endif]--><?php if(Route::has('dashboard')): ?>
             <a href="<?php echo e(route('dashboard')); ?>" class="block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700">Tauler</a>
-            <?php endif; ?>
+            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
         </nav>
 
         <div class="p-4 border-t border-gray-200 dark:border-gray-700">
@@ -55,7 +55,7 @@
             </div>
         </div>
     </aside>
-    <?php endif; ?>
+    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
     
     <div class="flex-1 lg:pl-64 min-h-screen p-6">

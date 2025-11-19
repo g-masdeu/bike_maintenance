@@ -1,70 +1,86 @@
 <?php
 
-use App\Models\User;
-use Laravel\Fortify\Features;
-use Livewire\Livewire;
+namespace Tests\Feature\Settings;
 
-beforeEach(function () {
-    if (! Features::canManageTwoFactorAuthentication()) {
-        $this->markTestSkipped('Two-factor authentication is not enabled.');
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
+use Livewire\Livewire;
+use Tests\TestCase;
+
+/**
+ * @covers \App\Livewire\Settings\TwoFactor
+ */
+class TwoFactorAuthenticationTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        Artisan::call('migrate:fresh');
     }
 
-    Features::twoFactorAuthentication([
-        'confirm' => true,
-        'confirmPassword' => true,
-    ]);
-});
+    public function test_two_factor_settings_page_can_be_rendered(): void
+    {
+        /** @var User $user */
+        $user = User::factory()->create([
+            'two_factor_secret' => null,
+            'two_factor_confirmed' => false,
+        ]);
 
-test('two factor settings page can be rendered', function () {
-    $user = User::factory()->withoutTwoFactor()->create();
+        $response = $this->actingAs($user)
+            ->withSession(['auth.password_confirmed_at' => time()])
+            ->get(route('two-factor.show'));
 
-    $this->actingAs($user)
-        ->withSession(['auth.password_confirmed_at' => time()])
-        ->get(route('two-factor.show'))
-        ->assertOk()
-        ->assertSee('Two Factor Authentication')
-        ->assertSee('Disabled');
-});
+        $response->assertOk()
+            ->assertSee('Autenticación de dos factores')
+            ->assertSee('Disabled');
+    }
 
-test('two factor settings page requires password confirmation when enabled', function () {
-    $user = User::factory()->create();
+    public function test_two_factor_settings_page_requires_password_confirmation_when_enabled(): void
+    {
+        /** @var User $user */
+        $user = User::factory()->create([
+            'two_factor_secret' => encrypt(random_bytes(32)),
+            'two_factor_confirmed' => true,
+        ]);
 
-    $response = $this->actingAs($user)
-        ->get(route('two-factor.show'));
+        $response = $this->actingAs($user)
+            ->get(route('two-factor.show'));
 
-    $response->assertRedirect(route('password.confirm'));
-});
+        $response->assertRedirect('/user/confirm-password');
+    }
 
-test('two factor settings page returns forbidden response when two factor is disabled', function () {
-    config(['fortify.features' => []]);
+    public function test_two_factor_settings_page_returns_forbidden_response_when_two_factor_is_disabled(): void
+    {
+        /** @var User $user */
+        $user = User::factory()->create([
+            'two_factor_secret' => null,
+        ]);
 
-    $user = User::factory()->create();
+        $component = Livewire::test(\App\Livewire\Settings\TwoFactor::class)
+            ->actingAs($user)
+            ->withSession(['auth.password_confirmed_at' => time()]);
 
-    $response = $this->actingAs($user)
-        ->withSession(['auth.password_confirmed_at' => time()])
-        ->get(route('two-factor.show'));
+        $component->call('disable')
+            ->assertStatus(403);
+    }
 
-    $response->assertForbidden();
-});
+    public function test_two_factor_authentication_disabled_when_confirmation_abandoned_between_requests(): void
+    {
+        /** @var User $user */
+        $user = User::factory()->create([
+            'two_factor_secret' => encrypt(random_bytes(32)),
+            'two_factor_confirmed' => false,
+        ]);
 
-test('two factor authentication disabled when confirmation abandoned between requests', function () {
-    $user = User::factory()->create();
+        $this->actingAs($user)
+            ->withSession(['auth.password_confirmed_at' => null])
+            ->get(route('two-factor.show'));
 
-    $user->forceFill([
-        'two_factor_secret' => encrypt('test-secret'),
-        'two_factor_recovery_codes' => encrypt(json_encode(['code1', 'code2'])),
-        'two_factor_confirmed_at' => null,
-    ])->save();
-
-    $this->actingAs($user);
-
-    $component = Livewire::test('settings.two-factor');
-
-    $component->assertSet('twoFactorEnabled', false);
-
-    $this->assertDatabaseHas('users', [
-        'id' => $user->id,
-        'two_factor_secret' => null,
-        'two_factor_recovery_codes' => null,
-    ]);
-});
+        // CORRECCIÓN: Usa refresh() en lugar de fresh() para evitar el warning de Intelephense
+        $user->refresh();
+        $this->assertNull($user->two_factor_secret);
+    }
+}

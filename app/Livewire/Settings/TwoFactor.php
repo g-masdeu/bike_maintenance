@@ -19,8 +19,8 @@ class TwoFactor extends Component
     // Variables para el layout
     public string $heading = 'Autenticación de dos factores';
     public string $subheading = 'Gestiona la seguridad de tu cuenta';
-    
-    // Configuración del modal de confirmación
+
+    // Configuración del modal
     public array $modalConfig = [
         'show' => false,
         'action' => null,
@@ -38,35 +38,25 @@ class TwoFactor extends Component
         $currentUser = Auth::user();
 
         if (!$currentUser instanceof User) {
-            // No hay usuario autenticado: inicializa propiedades por defecto
             $this->user = null;
             $this->twoFactorEnabled = false;
-            $this->passwordConfirmed = false;
-            $this->requiresConfirmation = false;
             return;
         }
 
         $this->user = $currentUser;
-
-        // Determina si la acción requiere confirmación
-        $this->requiresConfirmation = $currentUser->two_factor_confirmed ?? false;
-
-        // Determina si tiene 2FA habilitado
-        $this->twoFactorEnabled = (bool) $currentUser->two_factor_secret;
-
-        // Determina si la contraseña ha sido confirmada recientemente (Fortify)
+        $this->twoFactorEnabled = !empty($currentUser->two_factor_secret);
+        $this->requiresConfirmation = !empty($currentUser->two_factor_confirmed);
         $this->passwordConfirmed = session()->has('auth.password_confirmed_at');
-        
-        // Si el usuario tiene 2FA habilitado pero no confirmado y no hay confirmación de contraseña,
-        // deshabilitar el 2FA (confirmación abandonada)
+
+        // IMPORTANTE: Usa el método interno sin abortar
         if ($this->twoFactorEnabled && !$this->requiresConfirmation && !$this->passwordConfirmed) {
-            $this->disable();
+            $this->performDisable();
         }
-        
-        // Si ya tiene la clave secreta, generar la clave manual
-        if ($this->twoFactorEnabled && $this->user->two_factor_secret) {
+
+        // Genera la clave manual si está habilitado
+        if ($this->twoFactorEnabled && $currentUser->two_factor_secret) {
             try {
-                $secret = decrypt($this->user->two_factor_secret);
+                $secret = decrypt($currentUser->two_factor_secret);
                 $this->manualSetupKey = $this->base32Encode($secret);
             } catch (\Exception $e) {
                 $this->manualSetupKey = null;
@@ -75,7 +65,7 @@ class TwoFactor extends Component
     }
 
     /**
-     * Muestra el modal de confirmación antes de realizar una acción.
+     * Muestra el modal de confirmación.
      */
     public function confirmAction(string $action): void
     {
@@ -94,14 +84,14 @@ class TwoFactor extends Component
                 'action' => 'disable',
                 'title' => 'Deshabilitar autenticación de dos factores',
                 'message' => '¿Estás seguro de que deseas deshabilitar la autenticación de dos factores?',
-                'description' => 'Esto reducirá la seguridad de tu cuenta y ya no necesitarás un segundo factor para acceder.',
+                'description' => 'Esto reducirá la seguridad de tu cuenta.',
                 'buttonText' => 'Deshabilitar',
             ];
         }
     }
 
     /**
-     * Cierra el modal de confirmación.
+     * Cierra el modal.
      */
     public function closeModal(): void
     {
@@ -116,7 +106,7 @@ class TwoFactor extends Component
     }
 
     /**
-     * Confirma y ejecuta la acción pendiente.
+     * Confirma y ejecuta la acción.
      */
     public function confirmAndExecute(): void
     {
@@ -125,15 +115,14 @@ class TwoFactor extends Component
         if ($action === 'enable') {
             $this->enable();
         } elseif ($action === 'disable') {
-            $this->disable();
+            $this->disable(); // Acción del usuario: puede abortar
         }
 
         $this->closeModal();
     }
 
     /**
-     * Habilita la autenticación de dos factores para el usuario.
-     * Solo si la característica de Fortify está activada.
+     * Habilita 2FA.
      */
     public function enable(): void
     {
@@ -142,40 +131,44 @@ class TwoFactor extends Component
         }
 
         if ($this->user === null || $this->user->two_factor_secret) {
-            // Ya tiene 2FA habilitado o no hay usuario
             return;
         }
 
-        // Genera una clave secreta de 2FA y guarda en la base de datos
         $secret = random_bytes(32);
         $this->user->forceFill([
             'two_factor_secret' => encrypt($secret),
         ])->save();
 
-        // Actualiza la propiedad pública para reflejar el cambio en la vista
         $this->twoFactorEnabled = true;
-        
-        // Muestra el paso de verificación para escanear el QR
         $this->showVerificationStep = true;
-        
-        // Genera la clave de configuración manual
         $this->manualSetupKey = $this->base32Encode($secret);
     }
 
     /**
-     * Deshabilita la autenticación de dos factores para el usuario.
+     * Deshabilita 2FA (acción del usuario) - PUEDE ABORTAR
      */
     public function disable(): void
     {
-        if ($this->user === null || !$this->user->two_factor_secret) {
-            // 2FA ya está deshabilitado o no hay usuario
+        if (!$this->user || !$this->user->two_factor_secret) {
+            abort(403, 'La autenticación de dos factores no está habilitada.');
+        }
+
+        $this->performDisable();
+    }
+
+    /**
+     * Limpia datos de 2FA SIN abortar (uso interno)
+     */
+    private function performDisable(): void
+    {
+        if (!$this->user) {
             return;
         }
 
-        // Borra secret y códigos de recuperación
         $this->user->forceFill([
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
+            'two_factor_confirmed' => false,
         ])->save();
 
         $this->twoFactorEnabled = false;
@@ -184,7 +177,7 @@ class TwoFactor extends Component
     }
 
     /**
-     * Codifica un string en base32.
+     * Codifica en base32.
      */
     private function base32Encode(string $data): string
     {
@@ -204,9 +197,7 @@ class TwoFactor extends Component
     }
 
     /**
-     * Renderiza la vista Livewire del componente.
-     *
-     * @return \Illuminate\View\View
+     * Renderiza la vista.
      */
     public function render()
     {
