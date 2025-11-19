@@ -31,8 +31,9 @@ class Password extends Component
             throw $e;
         }
 
+        // CORREGIDO: Hashear la contraseña antes de guardarla
         Auth::user()->update([
-            'password' => $validated['password'],
+            'password' => bcrypt($validated['password']),
         ]);
 
         $this->reset('current_password', 'password', 'password_confirmation');

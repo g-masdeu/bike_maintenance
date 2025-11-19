@@ -5,6 +5,11 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 
+// Desactivar verificación de algoritmo para TODOS los tests en este archivo
+beforeEach(function () {
+    config(['hashing.bcrypt.verify' => false]);
+});
+
 test('password can be updated', function () {
     $user = User::factory()->create([
         'password' => Hash::make('password'),
