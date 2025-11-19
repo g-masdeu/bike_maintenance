@@ -12,17 +12,6 @@ jobs:
   laravel-tests:
     runs-on: ubuntu-latest # El entorno donde se ejecutarán las acciones
 
-    services:
-      # Configura un contenedor de MySQL para las pruebas
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: true
-          MYSQL_DATABASE: testing
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
     steps:
     - name: ⬇️ Checkout del código
       uses: actions/checkout@v4
@@ -31,12 +20,30 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.2' # Asegúrate de usar la versión correcta de PHP
-        extensions: imagick, mbstring, pdo_mysql, bcmath, fileinfo, gd, ext-ctype, xml
+        extensions: imagick, mbstring, pdo_sqlite, bcmath, fileinfo, gd, ext-ctype, xml
         ini-values: post_max_size=256M, upload_max_filesize=256M
         coverage: none # Puedes cambiar a 'xdebug' si necesitas cobertura de código
 
     - name: 📦 Instalar dependencias de Composer
       run: composer install --prefer-dist --no-progress
+
+    # NUEVOS PASOS AÑADIDOS
+    - name: ⚙️ Configurar Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: 📥 Instalar dependencias de Node
+      run: npm ci
+
+    - name: 🏗️ Construir assets con Vite
+      run: npm run build --if-present
+
+    # SOLUCIÓN RÁPIDA ALTERNATIVA (descomenta si no quieres construir assets)
+    # - name: Crear manifest Vite dummy
+    #   run: |
+    #     mkdir -p public/build
+    #     echo '{}' > public/build/manifest.json
 
     - name: 📄 Configurar el Entorno (.env)
       run: cp .env.example .env
@@ -44,17 +51,18 @@ jobs:
     - name: 🔑 Generar clave de aplicación
       run: php artisan key:generate
 
-    - name: 🛠️ Configurar las variables de la base de datos de prueba
+    - name: 🛠️ Configurar SQLite para testing
       run: |
-        sed -i 's/DB_CONNECTION=mysql/DB_CONNECTION=mysql/' .env
-        sed -i 's/DB_HOST=127.0.0.1/DB_HOST=127.0.0.1/' .env
-        sed -i 's/DB_PORT=3306/DB_PORT=3306/' .env
-        sed -i 's/DB_DATABASE=laravel/DB_DATABASE=testing/' .env
-        sed -i 's/DB_USERNAME=root/DB_USERNAME=root/' .env
-        sed -i 's/DB_PASSWORD=/DB_PASSWORD=/' .env
+        sed -i 's/DB_CONNECTION=mysql/DB_CONNECTION=sqlite/' .env
+        sed -i 's/DB_DATABASE=.*/DB_DATABASE=:memory:/' .env
+        # Eliminar líneas de MySQL si existen
+        sed -i '/^DB_HOST=/d' .env
+        sed -i '/^DB_PORT=/d' .env
+        sed -i '/^DB_USERNAME=/d' .env
+        sed -i '/^DB_PASSWORD=/d' .env
 
     - name: 🔄 Ejecutar Migraciones y Seeds (si tienes seeds)
       run: php artisan migrate --env=testing
 
-    - name: 🧪 Ejecutar pruebas de PHP ARTISAN SERVE
+    - name: 🧪 Ejecutar pruebas con Artisan
       run: php artisan test
