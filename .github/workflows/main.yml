@@ -56,5 +56,5 @@ jobs:
     - name: 🔄 Ejecutar Migraciones y Seeds (si tienes seeds)
       run: php artisan migrate --env=testing
 
-    - name: 🧪 Ejecutar pruebas de PHPUnit
-      run: ./vendor/bin/phpunit
+    - name: 🧪 Ejecutar pruebas de PHP ARTISAN SERVE
+      run: php artisan test
