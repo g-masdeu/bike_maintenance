@@ -56,10 +56,18 @@ class User extends Authenticatable
 
     public function getProfilePhotoUrlAttribute()
     {
-        return $this->profile_photo_path 
-            ? asset('storage/' . $this->profile_photo_path) 
+        return $this->profile_photo_path
+            ? asset('storage/' . $this->profile_photo_path)
             : asset('/images/default-avatar.png');
     }
 
+    public function oauthAccounts()
+    {
+        return $this->hasMany(OAuthAccount::class);
+    }
 
+    public function has2FAEnabled(): bool
+    {
+        return $this->two_factor_enabled;
+    }
 }
