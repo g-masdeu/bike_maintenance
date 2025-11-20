@@ -7,7 +7,7 @@ on:
     branches: [ "main", "master" ]
 
 jobs:
-  # Job 1: Tests (se ejecuta en GitHub)
+  # Job 1: Tests en GitHub (SQLite)
   laravel-tests:
     runs-on: ubuntu-latest
 
@@ -57,44 +57,62 @@ jobs:
       - name: 🧪 Ejecutar pruebas
         run: php artisan test --ci
 
-  # Job 2: Deploy (se ejecuta en tu servidor)
+  # Job 2: Deploy en servidor
   deploy:
     runs-on: self-hosted
     needs: laravel-tests
     if: github.ref == 'refs/heads/main'
 
     steps:
-    - name: ⬇️ Descargar código
-      uses: actions/checkout@v4
+      - name: ⬇️ Descargar código
+        uses: actions/checkout@v4
 
-    - name: 🚀 Desplegar en servidor
-      run: |
-        cd /var/www/bike_maintenance
+      - name: 🚀 Desplegar en servidor
+        run: |
+          cd /var/www/bike_maintenance
 
-        # Descargar última versión del código
-        git pull origin main
+          # Descargar última versión del código
+          git pull origin main
 
-        # Detectar PHP y comprobar driver MySQL
-        PHP_VERSION=$(php -r "echo PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION;")
-        if ! php -m | grep -q pdo_mysql; then
-            echo "🚨 pdo_mysql no encontrado. Instalando..."
-            sudo apt-get update
-            sudo apt-get install -y php${PHP_VERSION}-mysql
-            sudo systemctl restart php${PHP_VERSION}-fpm
-        fi
+          # Detectar versión PHP y verificar driver MySQL
+          PHP_VERSION=$(php -r "echo PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION;")
+          if ! php -m | grep -q pdo_mysql; then
+              echo "🚨 pdo_mysql no encontrado. Instalando..."
+              sudo apt-get update
+              sudo apt-get install -y php${PHP_VERSION}-mysql
+              sudo systemctl restart php${PHP_VERSION}-fpm
+          fi
 
-        # Instalar dependencias de Composer
-        composer install --prefer-dist --optimize-autoloader --no-dev --no-interaction
+          # Generar .env de producción usando secretos
+          echo "APP_NAME=Bike_Maintenance" > .env
+          echo "APP_ENV=production" >> .env
+          echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
+          echo "APP_DEBUG=false" >> .env
+          echo "APP_URL=${{ secrets.APP_URL }}" >> .env
+          echo "DB_CONNECTION=mysql" >> .env
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+          echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "CACHE_STORE=database" >> .env
+          echo "SESSION_DRIVER=database" >> .env
 
-        # Instalar dependencias de Node y compilar assets
-        npm ci
-        npm run build
+          # Instalar dependencias de Composer
+          composer install --prefer-dist --optimize-autoloader --no-dev --no-interaction
 
-        # Ejecutar migraciones
-        php artisan migrate --force
+          # Instalar dependencias de Node y compilar assets
+          npm ci
+          npm run build
 
-        # Limpiar caché
-        php artisan config:cache
-        php artisan route:cache
-        php artisan view:cache
-        php artisan event:cache
+          # Crear tablas de cache y sessions si no existen
+          php artisan cache:table || true
+          php artisan session:table || true
+          php artisan migrate --force
+
+          # Limpiar y cachear configuración
+          php artisan cache:clear
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          php artisan event:cache
