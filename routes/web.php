@@ -2,40 +2,53 @@
 
 use App\Http\Controllers\BicicletaController;
 use App\Http\Controllers\MantenimientoController;
+use App\Http\Controllers\OAuthController;
+use App\Http\Controllers\LanguageController;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
-use App\Livewire\Settings\TwoFactor; // Esta línea ES correcta aunque Intelephense la marque
+use App\Livewire\Settings\TwoFactor;
 use Illuminate\Support\Facades\Route;
-use Laravel\Fortify\Features;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth; 
 
-// Raíz: si está autenticado -> dashboard, si no -> welcome
-Route::get('/', function (Request $request) {
-    if ($request->user()) {
-        $bicicletas = $request->user()->bicicletas;
-        return view('dashboard', compact('bicicletas'));
-    }
-    return view('welcome');
+
+/*
+|--------------------------------------------------------------------------
+| Home / Dashboard
+|--------------------------------------------------------------------------
+*/
+// Esta ruta hará automáticamente la lógica que quieres
+Route::middleware('guest')->get('/', function () {
+    return view('welcome'); // Solo se muestra si NO estás autenticado
 })->name('home');
 
-Route::middleware(['auth'])->get('/dashboard', function (Request $request) {
+// Tu dashboard (sin cambios)
+Route::middleware('auth')->get('/dashboard', function (Request $request) {
     $bicicletas = $request->user()->bicicletas;
     return view('dashboard', compact('bicicletas'));
 })->name('dashboard');
 
-// Cambio de idioma
-Route::get('lang/{locale}', [App\Http\Controllers\LanguageController::class, 'changeLanguage'])->name('lang.switch');
+/*
+|--------------------------------------------------------------------------
+| Language Switching
+|--------------------------------------------------------------------------
+*/
+Route::get('lang/{locale}', [LanguageController::class, 'changeLanguage'])
+    ->name('lang.switch');
 
-// Settings (perfil, contraseña, apariencia, 2FA)
-Route::middleware(['auth'])->group(function () {
+/*
+|--------------------------------------------------------------------------
+| Settings (Profile, Password, Appearance, Two-Factor)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth')->prefix('settings')->group(function () {
 
-    // Mostrar formulario de perfil
-    Route::get('settings/profile', function () {
+    // Profile
+    Route::get('profile', function () {
         return view('profile.edit');
     })->name('settings.profile');
 
-    // Actualizar perfil
-    Route::put('settings/profile', function (Request $request) {
+    Route::put('profile', function (Request $request) {
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
@@ -43,50 +56,60 @@ Route::middleware(['auth'])->group(function () {
         ]);
 
         $user = $request->user();
-        $user->name = $request->name;
-        $user->email = $request->email;
+        $user->fill($request->only('name', 'email'));
 
         if ($request->hasFile('profile_photo')) {
-            $path = $request->file('profile_photo')->store('profile-photos', 'public');
-            $user->profile_photo_path = $path;
+            $user->profile_photo_path = $request->file('profile_photo')->store('profile-photos', 'public');
         }
 
         $user->save();
 
-        return back()->with('status', 'Perfil actualitzat correctament.');
+        return back()->with('status', 'Perfil actualizado correctamente.');
     })->name('settings.profile.update');
 
-    // Password y apariencia
-    Route::get('settings/password', Password::class)->name('settings.password');
-    Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
+    // Password & Appearance
+    Route::get('password', Password::class)->name('settings.password');
+    Route::get('appearance', Appearance::class)->name('settings.appearance');
 
-    // Two-Factor - SOLUCIÓN CORRECTA
-    Route::middleware(['password.confirm'])->group(function () {
-        Route::get('settings/two-factor', TwoFactor::class)->name('two-factor.show');
-    });
+    // Two-Factor Authentication (requires password confirmation)
+    Route::middleware('password.confirm')->get('two-factor', TwoFactor::class)
+        ->name('two-factor.show');
 });
 
-// Bicicletas y mantenimientos
-Route::middleware(['auth', 'verified'])->group(function () {
+/*
+|--------------------------------------------------------------------------
+| Bicicletas & Mantenimientos
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'verified'])->prefix('bicicletas')->group(function () {
 
-    // Lista de bicicletas
-    Route::get('/bicicletas', [BicicletaController::class, 'index'])->name('bicicletas.index');
+    // Bicicletas CRUD
+    Route::get('/', [BicicletaController::class, 'index'])->name('bicicletas.index');
+    Route::get('/new', [BicicletaController::class, 'create'])->name('bicicletas.create');
+    Route::post('/', [BicicletaController::class, 'store'])->name('bicicletas.store');
+    Route::put('/{bicicleta}', [BicicletaController::class, 'update'])->name('bicicletas.update');
+    Route::delete('/{bicicleta}', [BicicletaController::class, 'destroy'])->name('bicicletas.destroy');
 
-    // Crear bicicleta nueva
-    Route::get('/bicicletas/new', [BicicletaController::class, 'create'])->name('bicicletas.create');
-
-    // Guardar bicicleta
-    Route::post('/bicicletas', [BicicletaController::class, 'store'])->name('bicicletas.store');
-
-    // Mostrar, actualizar y eliminar bicicleta específica
-    Route::put('/bicicletas/{bicicleta}', [BicicletaController::class, 'update'])->name('bicicletas.update');
-    Route::delete('/bicicletas/{bicicleta}', [BicicletaController::class, 'destroy'])->name('bicicletas.destroy');
-
-    // Mantenimientos de bicicletas
-    Route::get('/bicicletas/{bicicleta}/mantenimientos', [MantenimientoController::class, 'index'])
+    // Mantenimientos
+    Route::get('/{bicicleta}/mantenimientos', [MantenimientoController::class, 'index'])
         ->name('bicicletas.mantenimientos.index');
-    Route::post('/bicicletas/{bicicleta}/mantenimientos', [MantenimientoController::class, 'store'])
+    Route::post('/{bicicleta}/mantenimientos', [MantenimientoController::class, 'store'])
         ->name('bicicletas.mantenimientos.store');
+});
+
+/*
+|--------------------------------------------------------------------------
+| OAuth Login (Google / GitHub)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('oauth')->group(function () {
+    Route::get('{provider}/redirect', [OAuthController::class, 'redirect'])
+        ->where('provider', 'google|github')
+        ->name('oauth.redirect');
+
+    Route::get('{provider}/callback', [OAuthController::class, 'callback'])
+        ->where('provider', 'google|github')
+        ->name('oauth.callback');
 });
 
 require __DIR__.'/auth.php';
