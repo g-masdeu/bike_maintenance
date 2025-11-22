@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('provider'); // 'google', etc.
             $table->string('provider_id')->unique();
-            $table->string('email')->nullable();
+            $table->string('provider_email')->nullable();
             $table->timestamps();
         });
     }

@@ -66,8 +66,8 @@ class User extends Authenticatable
         return $this->hasMany(OAuthAccount::class);
     }
 
-    public function has2FAEnabled(): bool
+    public function has2FAEnabled()
     {
-        return $this->two_factor_enabled;
+        return !is_null($this->two_factor_secret);
     }
 }

@@ -9,7 +9,7 @@ use App\Livewire\Settings\Password;
 use App\Livewire\Settings\TwoFactor;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Auth;
 
 
 /*
@@ -17,9 +17,14 @@ use Illuminate\Support\Facades\Auth;
 | Home / Dashboard
 |--------------------------------------------------------------------------
 */
-// Esta ruta hará automáticamente la lógica que quieres
-Route::middleware('guest')->get('/', function () {
-    return view('welcome'); // Solo se muestra si NO estás autenticado
+
+Route::get('/', function () {
+    /** @var \Illuminate\Contracts\Auth\Guard $auth */ // <-- ¡Añade esta línea!
+    $auth = auth();
+
+    return Auth::check()        
+        ? redirect('/dashboard')
+        : view('welcome');
 })->name('home');
 
 // Tu dashboard (sin cambios)
@@ -112,4 +117,4 @@ Route::prefix('oauth')->group(function () {
         ->name('oauth.callback');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

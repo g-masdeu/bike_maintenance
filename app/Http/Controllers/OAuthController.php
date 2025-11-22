@@ -11,9 +11,11 @@ use Laravel\Socialite\Facades\Socialite;
 
 class OAuthController extends Controller
 {
+    /**
+     * Redirige al proveedor OAuth (Google o GitHub)
+     */
     public function redirect($provider)
     {
-        // Validar proveedor
         if (!in_array($provider, ['google', 'github'])) {
             return redirect('/')->with('error', 'Proveedor no válido');
         }
@@ -21,45 +23,68 @@ class OAuthController extends Controller
         return Socialite::driver($provider)->redirect();
     }
 
+    /**
+     * Callback OAuth
+     */
     public function callback($provider)
     {
         try {
-            // Obtener usuario del proveedor OAuth
             $socialUser = Socialite::driver($provider)->user();
 
-            // Buscar si ya existe cuenta OAuth
+            \Log::info('OAuth callback iniciado', [
+                'provider' => $provider,
+                'user_id' => $socialUser->getId(),
+                'email' => $socialUser->getEmail()
+            ]);
+
+            // Buscar cuenta OAuth existente
             $oauthAccount = OAuthAccount::where('provider', $provider)
                 ->where('provider_id', $socialUser->getId())
                 ->first();
 
-            // Si existe, loguear directamente
             if ($oauthAccount) {
-                $user = $oauthAccount->user;
-                
-                // Si tiene 2FA habilitado, crear sesión de verificación
-                if ($user->has2FAEnabled()) {
-                    return $this->create2FASession($user, $provider, $socialUser);
-                }
-
-                // Si no tiene 2FA, loguear directamente
-                Auth::login($user);
-                return redirect()->route('dashboard')->with('success', 'Sesión iniciada');
+                // Usuario existente: login directo
+                Auth::login($oauthAccount->user);
+                return redirect()->route('dashboard');
             }
 
-            // Si no existe, crear nueva cuenta
+            // Usuario nuevo: crear y loguear
             return $this->createNewUser($socialUser, $provider);
 
         } catch (\Exception $e) {
-            return redirect('/')->with('error', 'Error en autenticación OAuth');
+            \Log::error('OAuth ERROR', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect('/')->with('error', "OAuth Error: {$e->getMessage()}");
         }
     }
 
+    /**
+     * Crear un usuario nuevo desde OAuth y loguearlo
+     */
     private function createNewUser($socialUser, $provider)
     {
-        // Crear sesión 2FA temporal
-        // El usuario aún no tiene 2FA habilitado, pero lo configurará después
-        $sessionToken = Str::random(32);
+        // Crear usuario temporal (con contraseña aleatoria)
+        $user = User::create([
+            'name' => $socialUser->getName(),
+            'email' => $socialUser->getEmail(),
+            'password' => bcrypt(Str::random(16)),
+        ]);
 
+        // Crear registro OAuth vinculado
+        OAuthAccount::create([
+            'user_id' => $user->id,
+            'provider' => $provider,
+            'provider_id' => $socialUser->getId(),
+        ]);
+
+        // Loguear al usuario
+        Auth::login($user);
+
+        // Crear sesión 2FA temporal
+        $sessionToken = Str::random(32);
         OAuth2FASession::create([
             'session_token' => $sessionToken,
             'provider' => $provider,
@@ -68,11 +93,14 @@ class OAuthController extends Controller
             'provider_name' => $socialUser->getName(),
         ]);
 
-        // Redirigir a pantalla de registro/2FA
+        // Redirigir a pantalla de 2FA (usuario ya logueado)
         return redirect()->route('oauth.verify-2fa', $sessionToken)
             ->with('new_user', true);
     }
 
+    /**
+     * Crear sesión 2FA adicional si es necesario
+     */
     private function create2FASession($user, $provider, $socialUser)
     {
         $sessionToken = Str::random(32);

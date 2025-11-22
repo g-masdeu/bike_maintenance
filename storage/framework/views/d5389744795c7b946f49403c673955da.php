@@ -36,18 +36,13 @@ unset($__defined_vars, $__key, $__value); ?>
 
 <!DOCTYPE html>
 <html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 
     <title><?php echo e($heading); ?></title>
-
-    <!-- Tailwind CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
         .fonsHeaderFooter {
@@ -69,13 +64,29 @@ unset($__defined_vars, $__key, $__value); ?>
         }
 
         @keyframes oceanWave {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
         }
 
         @keyframes underwater {
-            0%, 100% { transform: translate(0, 0); opacity: 0.4; }
-            50% { transform: translate(5px, 5px); opacity: 0.7; }
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+                opacity: 0.4;
+            }
+
+            50% {
+                transform: translate(5px, 5px);
+                opacity: 0.7;
+            }
         }
     </style>
 
@@ -165,8 +176,16 @@ unset($__defined_vars, $__key, $__value); ?>
         &copy; <?php echo e(date('Y')); ?> <?php echo e(config('app.name', 'Bike Maintenance')); ?> · Guillem Masdeu de Maria
     </footer>
 
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
     <?php echo $__env->yieldPushContent('scripts'); ?>
     <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::scripts(); ?>
 
 </body>
-</html><?php /**PATH C:\daw\dwm\bike_maintenance\resources\views/layouts/app.blade.php ENDPATH**/ ?>
+
+</html>
+<?php /**PATH C:\daw\dwm\bike_maintenance\resources\views/layouts/app.blade.php ENDPATH**/ ?>
