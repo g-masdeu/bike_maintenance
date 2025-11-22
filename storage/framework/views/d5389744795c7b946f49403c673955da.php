@@ -95,13 +95,12 @@ unset($__defined_vars, $__key, $__value); ?>
 
 </head>
 
-<body class="min-h-screen flex flex-col antialiased bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+<body class="min-h-screen flex flex-col antialiased bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-x-hidden">
 
     <!-- Header -->
     <header class="fonsHeaderFooter flex justify-between items-center p-4 border-b border-white/20 relative">
         <div class="flex flex-col">
             <h1 class="text-lg font-semibold"><?php echo e($heading); ?></h1>
-
             <?php if($subheading): ?>
                 <p class="text-sm opacity-90"><?php echo e($subheading); ?></p>
             <?php endif; ?>
@@ -110,7 +109,7 @@ unset($__defined_vars, $__key, $__value); ?>
         <?php if(auth()->guard()->check()): ?>
             <div class="relative" x-data="{ open: false }">
                 <button @click="open = !open"
-                    class="w-10 h-10 rounded-full overflow-hidden border-2 border-white/50 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all hover:border-white"
+                    class="w-10 h-10 rounded-full overflow-hidden border-2 border-white/50 hover:border-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-white/70 transition-all"
                     aria-label="Menú de usuario" aria-expanded="false" x-bind:aria-expanded="open.toString()">
 
                     <?php if(Auth::user()->profile_photo_path): ?>
@@ -129,7 +128,6 @@ unset($__defined_vars, $__key, $__value); ?>
                     x-transition:leave-end="opacity-0 scale-95" @click.away="open = false"
                     class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
                     style="display: none;">
-
                     <div class="py-1">
                         <a href="<?php echo e(route('settings.profile')); ?>"
                             class="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
@@ -167,8 +165,7 @@ unset($__defined_vars, $__key, $__value); ?>
             </div>
         <?php endif; ?>
 
-        <?php echo e($slot ?? ''); ?>
-
+        <?php echo $__env->yieldContent('content'); ?>
     </main>
 
     <!-- Footer -->
@@ -181,7 +178,7 @@ unset($__defined_vars, $__key, $__value); ?>
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
+
     <?php echo $__env->yieldPushContent('scripts'); ?>
     <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::scripts(); ?>
 
