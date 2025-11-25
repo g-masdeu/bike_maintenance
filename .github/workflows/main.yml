@@ -63,17 +63,6 @@ jobs:
       - name: 🔑 Generar APP_KEY
         run: php artisan key:generate
 
-      - name: ⏳ Esperar a MySQL
-        run: |
-          for i in {1..10}; do
-            if mysqladmin ping -h127.0.0.1 -uroot -proot --silent; then
-              echo "MySQL listo"
-              break
-            fi
-            echo "Esperando MySQL ($i/10)..."
-            sleep 2
-          done
-
       - name: 🔄 Ejecutar Migraciones
         run: php artisan migrate --force
 
@@ -103,8 +92,8 @@ jobs:
         run: |
           cd /var/www/bike_maintenance
 
-          # Crear .env de producción
-          cat > .env <<EOL
+          # Crear .env de producción sin espacios iniciales
+          cat > .env <<EOL 
           APP_NAME=Bike_Maintenance
           APP_ENV=production
           APP_KEY=$APP_KEY
@@ -133,14 +122,14 @@ jobs:
           GOOGLE_REDIRECT=$APP_URL/oauth/google/callback
           EOL
 
-          # Levantar contenedores y build
-          docker-compose down
-          docker-compose up -d --build
+          # Detener contenedores antiguos, levantar con build
+          docker compose down
+          docker compose up -d --build
 
-          # Ejecutar migraciones dentro del contenedor PHP
-          docker-compose exec -T app php artisan migrate --force
-          docker-compose exec -T app php artisan cache:clear
-          docker-compose exec -T app php artisan config:cache
-          docker-compose exec -T app php artisan route:cache
-          docker-compose exec -T app php artisan view:cache
-          docker-compose exec -T app php artisan event:cache
+          # Ejecutar migraciones y cachear dentro del contenedor PHP
+          docker compose exec -T app php artisan migrate --force
+          docker compose exec -T app php artisan cache:clear
+          docker compose exec -T app php artisan config:cache
+          docker compose exec -T app php artisan route:cache
+          docker compose exec -T app php artisan view:cache
+          docker compose exec -T app php artisan event:cache
