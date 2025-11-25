@@ -52,6 +52,9 @@ jobs:
       - name: 📄 Configurar entorno de testing (.env)
         run: cp .env.example .env
 
+      - name: 🔑 Generar APP_KEY
+        run: php artisan key:generate
+
       - name: 🛠️ Configurar MySQL para testing
         run: |
           sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=mysql/' .env
