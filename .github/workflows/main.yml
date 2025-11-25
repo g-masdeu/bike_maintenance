@@ -24,6 +24,14 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: bike_maintenance
+      DB_USERNAME: root
+      DB_PASSWORD: root
+
     steps:
       - name: ⬇️ Checkout del código
         uses: actions/checkout@v4
@@ -55,15 +63,6 @@ jobs:
       - name: 🔑 Generar APP_KEY
         run: php artisan key:generate
 
-      - name: 🛠️ Configurar MySQL para testing
-        run: |
-          sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=mysql/' .env
-          sed -i 's/DB_HOST=.*/DB_HOST=127.0.0.1/' .env
-          sed -i 's/DB_PORT=.*/DB_PORT=3306/' .env
-          sed -i 's/DB_DATABASE=.*/DB_DATABASE=bike_maintenance/' .env
-          sed -i 's/DB_USERNAME=.*/DB_USERNAME=root/' .env
-          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=root/' .env
-
       - name: ⏳ Esperar a MySQL
         run: |
           for i in {1..10}; do
@@ -81,8 +80,6 @@ jobs:
       - name: 🧪 Ejecutar pruebas
         run: php artisan test --ci
 
-
-  # Job 2: Deploy en servidor
   deploy:
     runs-on: self-hosted
     needs: laravel-tests
@@ -92,52 +89,58 @@ jobs:
       - name: ⬇️ Descargar código
         uses: actions/checkout@v4
 
-      - name: 🚀 Desplegar en servidor
+      - name: 🚀 Desplegar con Docker
+        env:
+          APP_KEY: ${{ secrets.APP_KEY }}
+          APP_URL: ${{ secrets.APP_URL }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
         run: |
           cd /var/www/bike_maintenance
 
-          # Descargar última versión del código
-          git pull origin main
+          # Crear .env de producción
+          cat > .env <<EOL
+          APP_NAME=Bike_Maintenance
+          APP_ENV=production
+          APP_KEY=$APP_KEY
+          APP_DEBUG=false
+          APP_URL=$APP_URL
 
-          # Detectar versión PHP y verificar driver MySQL
-          PHP_VERSION=$(php -r "echo PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION;")
-          if ! php -m | grep -q pdo_mysql; then
-              echo "🚨 pdo_mysql no encontrado. Instalando..."
-              sudo apt-get update
-              sudo apt-get install -y php${PHP_VERSION}-mysql
-              sudo systemctl restart php${PHP_VERSION}-fpm
-          fi
+          APP_LOCALE=es
+          APP_FALLBACK_LOCALE=es
+          APP_FAKER_LOCALE=es_ES  
 
-          # Generar .env de producción usando secretos
-          echo "APP_NAME=Bike_Maintenance" > .env
-          echo "APP_ENV=production" >> .env
-          echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
-          echo "APP_DEBUG=false" >> .env
-          echo "APP_URL=${{ secrets.APP_URL }}" >> .env
-          echo "DB_CONNECTION=mysql" >> .env
-          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
-          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
-          echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
-          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-          echo "CACHE_STORE=database" >> .env
-          echo "SESSION_DRIVER=database" >> .env
+          PHP_CLI_SERVER_WORKERS=4
+          BCRYPT_ROUNDS=12
 
-          # Instalar dependencias de Composer
-          composer install --prefer-dist --optimize-autoloader --no-dev --no-interaction
+          DB_CONNECTION=mysql
+          DB_HOST=$DB_HOST
+          DB_PORT=$DB_PORT
+          DB_DATABASE=$DB_DATABASE
+          DB_USERNAME=$DB_USERNAME
+          DB_PASSWORD=$DB_PASSWORD
 
-          # Instalar dependencias de Node y compilar assets
-          npm ci
-          npm run build
+          SESSION_DRIVER=database
+          CACHE_STORE=database
 
-          # Crear tablas de cache y sessions si no existen
-          php artisan cache:table || true
-          php artisan session:table || true
-          php artisan migrate --force
+          GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
+          GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET
+          GOOGLE_REDIRECT=$APP_URL/oauth/google/callback
+          EOL
 
-          # Limpiar y cachear configuración
-          php artisan cache:clear
-          php artisan config:cache
-          php artisan route:cache
-          php artisan view:cache
-          php artisan event:cache
+          # Levantar contenedores y build
+          docker-compose down
+          docker-compose up -d --build
+
+          # Ejecutar migraciones dentro del contenedor PHP
+          docker-compose exec -T app php artisan migrate --force
+          docker-compose exec -T app php artisan cache:clear
+          docker-compose exec -T app php artisan config:cache
+          docker-compose exec -T app php artisan route:cache
+          docker-compose exec -T app php artisan view:cache
+          docker-compose exec -T app php artisan event:cache
