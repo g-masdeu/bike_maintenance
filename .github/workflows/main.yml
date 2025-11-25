@@ -7,9 +7,22 @@ on:
     branches: [ "main", "master" ]
 
 jobs:
-  # Job 1: Tests en GitHub (SQLite)
   laravel-tests:
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: bike_maintenance
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
       - name: ⬇️ Checkout del código
@@ -19,7 +32,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: imagick, mbstring, pdo_sqlite, bcmath, fileinfo, gd, ext-ctype, xml
+          extensions: imagick, mbstring, pdo_mysql, bcmath, fileinfo, gd, ext-ctype, xml
           coverage: none
 
       - name: ⚙️ Configurar Node.js
@@ -39,9 +52,6 @@ jobs:
       - name: 📄 Configurar entorno de testing (.env)
         run: cp .env.example .env
 
-      - name: 🔑 Generar clave de aplicación
-        run: php artisan key:generate
-
       - name: 🛠️ Configurar MySQL para testing
         run: |
           sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=mysql/' .env
@@ -49,14 +59,25 @@ jobs:
           sed -i 's/DB_PORT=.*/DB_PORT=3306/' .env
           sed -i 's/DB_DATABASE=.*/DB_DATABASE=bike_maintenance/' .env
           sed -i 's/DB_USERNAME=.*/DB_USERNAME=root/' .env
-          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=/' .env
+          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=root/' .env
 
+      - name: ⏳ Esperar a MySQL
+        run: |
+          for i in {1..10}; do
+            if mysqladmin ping -h127.0.0.1 -uroot -proot --silent; then
+              echo "MySQL listo"
+              break
+            fi
+            echo "Esperando MySQL ($i/10)..."
+            sleep 2
+          done
 
       - name: 🔄 Ejecutar Migraciones
-        run: php artisan migrate --env=testing --force
+        run: php artisan migrate --force
 
       - name: 🧪 Ejecutar pruebas
         run: php artisan test --ci
+
 
   # Job 2: Deploy en servidor
   deploy:
