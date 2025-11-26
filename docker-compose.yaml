@@ -28,20 +28,19 @@ services:
     networks:
       - bike_network
 
-    mysql:
-      image: mysql:8.0
-      container_name: bike_db
-      environment:
-        MYSQL_ROOT_PASSWORD: rootpassword
-        MYSQL_DATABASE: bike_maintenance
-        MYSQL_USER: beor
-        MYSQL_PASSWORD: aeiouguillem..
-      volumes:
+  mysql:
+    image: mysql:8.0
+    container_name: bike_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: bike_maintenance
+      MYSQL_USER: beor
+      MYSQL_PASSWORD: aeiouguillem..
+    volumes:
       - ./mysql_data:/var/lib/mysql
-      user: "${UID}:${GID}"
-
-      networks:
-        - bike_network
+    user: "${UID}:${GID}"
+    networks:
+      - bike_network
 
 networks:
   bike_network:
