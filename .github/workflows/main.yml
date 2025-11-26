@@ -90,7 +90,8 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
         run: |
-          cd /var/www/bike_maintenance
+          docker compose down
+          docker compose up -d --build
 
           # Crear .env de producción sin espacios delante
           cat > .env <<'EOL'
