@@ -37,6 +37,8 @@ services:
       MYSQL_DATABASE: bike_maintenance
       MYSQL_USER: beor
       MYSQL_PASSWORD: aeiouguillem..
+    ports:
+      - "3306:3306"
     volumes:
       - db-data:/var/lib/mysql 
     networks:
