@@ -26,8 +26,7 @@ RUN apk update && apk add --no-cache \
     && docker-php-ext-enable opcache \
     && apk del .build-deps
 
-# 🔑 Instalación de Composer en el Stage Final (Soluciona el error 'composer not found')
-# Descargar Composer y moverlo a un directorio en el PATH
+# Instalación de Composer en el Stage Final
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 WORKDIR /var/www/html

@@ -9,7 +9,7 @@ services:
     working_dir: /var/www/html
     volumes:
       - ./:/var/www/html
-      - /var/www/html/vendor
+      - /var/www/html/vendor  # 👈 Volumen anónimo para proteger el 'vendor' de la imagen
     depends_on:
       - mysql
     networks:
@@ -37,7 +37,6 @@ services:
       MYSQL_DATABASE: bike_maintenance
       MYSQL_USER: beor
       MYSQL_PASSWORD: aeiouguillem..
-    # ¡IMPORTANTE! Usamos un volumen con nombre en lugar de un mapeo local.
     volumes:
       - db-data:/var/lib/mysql 
     networks:
@@ -47,7 +46,6 @@ networks:
   bike_network:
     driver: bridge
 
-# Definición del volumen con nombre
 volumes:
   db-data:
     driver: local

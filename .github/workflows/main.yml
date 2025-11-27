@@ -80,7 +80,6 @@ jobs:
         run: docker compose down -v || true
 
       # Paso 2: Limpiar y restaurar la propiedad
-      # Usamos `whoami` para obtener el usuario que ejecuta el runner
       - name: 🧹 Limpiar directorio y restaurar propiedad
         run: |
           sudo chown -R $(whoami):$(whoami) ${{ github.workspace }} || true
@@ -94,16 +93,19 @@ jobs:
 
       - name: 🚀 Desplegar con Docker
         env:
+          # Variables de la aplicación para el script
           APP_KEY: ${{ secrets.APP_KEY }}
           APP_URL: ${{ secrets.APP_URL }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          DB_DATABASE: ${{ secrets.DB_DATABASE }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
         run: |
+          # 1. EXPORTAR SECRETS DE BASE DE DATOS PARA SU USO EN EL SHELL (cat)
+          # Esto resuelve el error de ${DB_USERNAME}
+          export DB_PORT="${{ secrets.DB_PORT }}"
+          export DB_DATABASE="${{ secrets.DB_DATABASE }}"
+          export DB_USERNAME="${{ secrets.DB_USERNAME }}"
+          export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+          
           # Crear archivo nginx/default.conf
           mkdir -p nginx
           cat > nginx/default.conf <<'EOL'
@@ -140,11 +142,11 @@ jobs:
           PHP_CLI_SERVER_WORKERS=4
           BCRYPT_ROUNDS=12
           DB_CONNECTION=mysql
-          DB_HOST=mysql
+          DB_HOST=mysql         # Nombre del servicio Docker
           DB_PORT=${DB_PORT}
           DB_DATABASE=${DB_DATABASE}
-          DB_USERNAME=${DB_USERNAME}
-          DB_PASSWORD=${DB_PASSWORD}
+          DB_USERNAME=${DB_USERNAME} # Se expande correctamente
+          DB_PASSWORD=${DB_PASSWORD} # Se expande correctamente
           SESSION_DRIVER=database
           CACHE_STORE=database
           GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
@@ -159,10 +161,10 @@ jobs:
           # Esperar a que esté listo
           sleep 10
 
-          # 🔑 PASO CLAVE: CORREGIR PERMISOS DENTRO DEL CONTENEDOR 🔑
+          # 🔑 PASO CLAVE 1: CORREGIR PERMISOS COMO ROOT (SOLUCIÓN chmod: Operation not permitted)
           docker compose exec -T --user root app chmod -R 777 storage bootstrap/cache
 
-          # Ejecutar migraciones y cachear
+          # 🔑 PASO CLAVE 2: Ejecutar comandos de Laravel (Como www-data)
           docker compose exec -T app php artisan migrate --force
           docker compose exec -T app php artisan cache:clear
           docker compose exec -T app php artisan config:cache
