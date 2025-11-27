@@ -9,7 +9,7 @@ services:
     working_dir: /var/www/html
     volumes:
       - ./:/var/www/html
-      - /var/www/html/vendor  # 👈 Volumen anónimo para proteger el 'vendor' de la imagen
+      - /var/www/html/vendor  # 👈 CORRECCIÓN: Protege la carpeta vendor de la imagen
     depends_on:
       - mysql
     networks:

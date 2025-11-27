@@ -99,16 +99,18 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
         run: |
-          # 1. EXPORTAR SECRETS DE BASE DE DATOS PARA SU USO EN EL SHELL (cat)
-          # Esto resuelve el error de ${DB_USERNAME}
+          # 1. 🔑 CORRECCIÓN DE SECRETS: Exportar variables para que el shell las expanda correctamente.
           export DB_PORT="${{ secrets.DB_PORT }}"
           export DB_DATABASE="${{ secrets.DB_DATABASE }}"
           export DB_USERNAME="${{ secrets.DB_USERNAME }}"
           export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+          export APP_KEY="${{ secrets.APP_KEY }}"
+          export APP_URL="${{ secrets.APP_URL }}"
           
           # Crear archivo nginx/default.conf
           mkdir -p nginx
-          cat > nginx/default.conf <<'EOL'
+          # 2. CORRECCIÓN SINTAXIS: Eliminar comillas simples en EOL para permitir expansión de variables.
+          cat > nginx/default.conf <<EOL
           server {
               listen 80;
               server_name _;
@@ -130,7 +132,8 @@ jobs:
           EOL
 
           # Crear .env de producción
-          cat > .env <<'EOL'
+          # 3. CORRECCIÓN SINTAXIS: Eliminar comillas simples en EOL.
+          cat > .env <<EOL
           APP_NAME=Bike_Maintenance
           APP_ENV=production
           APP_KEY=${APP_KEY}
@@ -142,11 +145,11 @@ jobs:
           PHP_CLI_SERVER_WORKERS=4
           BCRYPT_ROUNDS=12
           DB_CONNECTION=mysql
-          DB_HOST=mysql         # Nombre del servicio Docker
+          DB_HOST=mysql         
           DB_PORT=${DB_PORT}
           DB_DATABASE=${DB_DATABASE}
-          DB_USERNAME=${DB_USERNAME} # Se expande correctamente
-          DB_PASSWORD=${DB_PASSWORD} # Se expande correctamente
+          DB_USERNAME=${DB_USERNAME} 
+          DB_PASSWORD=${DB_PASSWORD}
           SESSION_DRIVER=database
           CACHE_STORE=database
           GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
@@ -158,10 +161,8 @@ jobs:
           docker compose down || true
           docker compose up -d --build
 
-          # ⏳ ESPERAR HASTA QUE MYSQL ESTÉ DISPONIBLE ⏳
+          # 4. CORRECCIÓN ESPERA: Espera activa hasta que MySQL esté disponible (soluciona Connection refused).
           echo "Esperando a que la base de datos esté lista..."
-          # Utilizamos el contenedor 'app' para ejecutar el script de espera.
-          # Este script intenta conectarse al puerto 3306 del host 'mysql' hasta que tiene éxito.
           docker compose exec -T app sh -c '
             max_retries=15; 
             retry_count=0;
@@ -177,10 +178,10 @@ jobs:
             echo "MySQL está listo. Continuar con las migraciones."
           '
           
-          # 🔑 PASO CLAVE 1: CORREGIR PERMISOS COMO ROOT
+          # 5. CORRECCIÓN PERMISOS: Usar --user root para evitar Operation not permitted.
           docker compose exec -T --user root app chmod -R 777 storage bootstrap/cache
 
-          # 🔑 PASO CLAVE 2: Ejecutar comandos de Laravel (Como www-data)
+          # Ejecutar comandos de Laravel 
           docker compose exec -T app php artisan migrate --force
           docker compose exec -T app php artisan cache:clear
           docker compose exec -T app php artisan config:cache
