@@ -75,6 +75,11 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
+      - name: 🧹 Limpiar directorio con permisos
+        run: |
+          sudo rm -rf ${{ github.workspace }}/* || true
+          sudo chown -R $beor:$beor ${{ github.workspace }} || true
+
       - name: ⬇️ Descargar código
         uses: actions/checkout@v4
 
@@ -90,44 +95,62 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
         run: |
-          docker compose down
-          docker compose up -d --build
+          # Crear archivo nginx/default.conf
+          mkdir -p nginx
+          cat > nginx/default.conf <<'EOL'
+          server {
+              listen 80;
+              server_name _;
+              
+              root /var/www/html/public;
+              index index.php;
 
-          # Crear .env de producción sin espacios delante
+              location / {
+                  try_files $uri $uri/ /index.php?$query_string;
+              }
+
+              location ~ \.php$ {
+                  fastcgi_pass app:9000;
+                  fastcgi_index index.php;
+                  fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+                  include fastcgi_params;
+              }
+          }
+          EOL
+
+          # Crear .env de producción
           cat > .env <<'EOL'
           APP_NAME=Bike_Maintenance
           APP_ENV=production
           APP_KEY=${APP_KEY}
           APP_DEBUG=false
           APP_URL=${APP_URL}
-
           APP_LOCALE=es
           APP_FALLBACK_LOCALE=es
           APP_FAKER_LOCALE=es_ES
-
           PHP_CLI_SERVER_WORKERS=4
           BCRYPT_ROUNDS=12
-
           DB_CONNECTION=mysql
           DB_HOST=${DB_HOST}
           DB_PORT=${DB_PORT}
           DB_DATABASE=${DB_DATABASE}
           DB_USERNAME=${DB_USERNAME}
           DB_PASSWORD=${DB_PASSWORD}
-
           SESSION_DRIVER=database
           CACHE_STORE=database
-
           GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
           GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
           GOOGLE_REDIRECT=${APP_URL}/oauth/google/callback
           EOL
 
-          # Detener contenedores antiguos y levantar con build
-          docker compose down
+          # Detener y levantar contenedores
+          docker compose down || true
           docker compose up -d --build
 
-          # Ejecutar migraciones y cachear dentro del contenedor PHP
+          # Esperar a que esté listo
+          sleep 10
+
+          # Ejecutar migraciones y cachear
           docker compose exec -T app php artisan migrate --force
           docker compose exec -T app php artisan cache:clear
           docker compose exec -T app php artisan config:cache
