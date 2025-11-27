@@ -160,7 +160,6 @@ jobs:
           sleep 10
 
           # Ejecutar migraciones y cachear
-          docker compose exec -T app composer install --no-dev --optimize-autoloader
           docker compose exec -T app php artisan migrate --force
           docker compose exec -T app php artisan cache:clear
           docker compose exec -T app php artisan config:cache
