@@ -158,10 +158,26 @@ jobs:
           docker compose down || true
           docker compose up -d --build
 
-          # Esperar a que esté listo
-          sleep 10
-
-          # 🔑 PASO CLAVE 1: CORREGIR PERMISOS COMO ROOT (SOLUCIÓN chmod: Operation not permitted)
+          # ⏳ ESPERAR HASTA QUE MYSQL ESTÉ DISPONIBLE ⏳
+          echo "Esperando a que la base de datos esté lista..."
+          # Utilizamos el contenedor 'app' para ejecutar el script de espera.
+          # Este script intenta conectarse al puerto 3306 del host 'mysql' hasta que tiene éxito.
+          docker compose exec -T app sh -c '
+            max_retries=15; 
+            retry_count=0;
+            while ! nc -z mysql 3306 && [ $retry_count -lt $max_retries ]; do 
+              echo "MySQL no está disponible aún. Esperando 2 segundos..."; 
+              sleep 2; 
+              retry_count=$((retry_count + 1));
+            done
+            if [ $retry_count -eq $max_retries ]; then
+              echo "Error: MySQL no inició a tiempo."
+              exit 1
+            fi
+            echo "MySQL está listo. Continuar con las migraciones."
+          '
+          
+          # 🔑 PASO CLAVE 1: CORREGIR PERMISOS COMO ROOT
           docker compose exec -T --user root app chmod -R 777 storage bootstrap/cache
 
           # 🔑 PASO CLAVE 2: Ejecutar comandos de Laravel (Como www-data)
