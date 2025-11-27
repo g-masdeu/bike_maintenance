@@ -160,7 +160,7 @@ jobs:
           sleep 10
 
           # 🔑 PASO CLAVE: CORREGIR PERMISOS DENTRO DEL CONTENEDOR 🔑
-          docker compose exec -T app chmod -R 777 storage bootstrap/cache
+          docker compose exec -T --user root app chmod -R 777 storage bootstrap/cache
 
           # Ejecutar migraciones y cachear
           docker compose exec -T app php artisan migrate --force
