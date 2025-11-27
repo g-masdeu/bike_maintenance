@@ -112,22 +112,22 @@ jobs:
           # 2. CORRECCIÓN SINTAXIS: Eliminar comillas simples en EOL para permitir expansión de variables.
           cat > nginx/default.conf <<EOL
           server {
-              listen 80;
-              server_name _;
+            listen 80;
+            server_name _;
 
-              root /var/www/html/public;
-              index index.php;
+            root /var/www/html/public;
+            index index.php;
 
-              location / {
-                  try_files $uri $uri/ /index.php?$is_args$query_string;
-              }
+            location / {
+              try_files \$uri \$uri/ /index.php?\$is_args\$query_string;
+            }
 
-              location ~ \.php$ {
-                  fastcgi_pass app:9000;
-                  fastcgi_index index.php;
-                  fastcgi_param SCRIPT_FILENAME "$realpath_root$fastcgi_script_name";
-                  include fastcgi_params;
-              }
+            location ~ \.php$ {
+              fastcgi_pass app:9000;
+              fastcgi_index index.php;
+              fastcgi_param SCRIPT_FILENAME "\$realpath_root\$fastcgi_script_name";
+              include fastcgi_params;
+            }
           }
           EOL
 
