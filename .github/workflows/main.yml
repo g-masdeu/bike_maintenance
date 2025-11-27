@@ -75,13 +75,22 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
-      - name: 🧹 Limpiar directorio con permisos
-        run: |
-          sudo rm -rf ${{ github.workspace }}/* || true
-          sudo chown -R $beor:$beor ${{ github.workspace }} || true
+      # Paso 1: Detener contenedores por si estuvieran bloqueando archivos
+      - name: 🐳 Detener contenedores anteriores
+        run: docker compose down -v || true
 
+      # Paso 2: Limpiar y restaurar la propiedad
+      # Usamos `whoami` para obtener el usuario que ejecuta el runner
+      - name: 🧹 Limpiar directorio y restaurar propiedad
+        run: |
+          sudo chown -R $(whoami):$(whoami) ${{ github.workspace }} || true
+          rm -rf ${{ github.workspace }}/* || true
+
+      # Paso 3: Descargar el código sin limpieza automática
       - name: ⬇️ Descargar código
         uses: actions/checkout@v4
+        with:
+          clean: false
 
       - name: 🚀 Desplegar con Docker
         env:

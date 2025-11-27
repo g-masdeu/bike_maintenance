@@ -36,12 +36,17 @@ services:
       MYSQL_DATABASE: bike_maintenance
       MYSQL_USER: beor
       MYSQL_PASSWORD: aeiouguillem..
+    # ¡IMPORTANTE! Usamos un volumen con nombre en lugar de un mapeo local.
     volumes:
-      - ./mysql_data:/var/lib/mysql
-    user: "${UID}:${GID}"
+      - db-data:/var/lib/mysql 
     networks:
       - bike_network
 
 networks:
   bike_network:
     driver: bridge
+
+# Definición del volumen con nombre
+volumes:
+  db-data:
+    driver: local
