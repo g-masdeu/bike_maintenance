@@ -641,7 +641,7 @@
 
     <!-- Footer -->
     <footer class="fonsHeaderFooter">
-        &copy; {{ date('Y') }} {{ config('app.name', 'Bike Maintenance') }} · Guillem Masdeu de Maria
+        &copy; {{ 2026 }} {{ config('app.name', 'Bike Maintenance') }} · Guillem Masdeu de Maria
     </footer>
 
     <script>
