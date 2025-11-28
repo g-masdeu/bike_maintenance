@@ -2,7 +2,7 @@
 
 **Proyecto en desarrollo**: Aplicación web para ciclistas que permite llevar el control del mantenimiento de sus bicicletas según kilometraje y tiempo de uso.  
 
-El proyecto está desarrollado con **Laravel** y tiene como objetivo aprender a trabajar con **CI/CD en Laravel Cloud**.
+El proyecto está desarrollado con **Laravel** y tiene como objetivo aprender a trabajar con **CI/CD con Git Actions**.
 
 ---
 
