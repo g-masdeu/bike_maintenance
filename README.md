@@ -21,14 +21,14 @@ El proyecto está desarrollado con **Laravel** y tiene como objetivo aprender a 
 - **Backend**: Laravel 10
 - **Base de datos**: MySQL
 - **Frontend**: Blade, TailwindCSS
-- **CI/CD**: Laravel Cloud
+- **CI/CD**: Git Actions
 
 ---
 
 ## Estado del proyecto
 
 - Actualmente en **desarrollo**.
-- Se utiliza para **prácticas de CI/CD y despliegue en Laravel Cloud**.
+- Se utiliza para **prácticas de CI/CD con Git Actions**.
 - Muchas funcionalidades todavía están en construcción.
 
 ---
