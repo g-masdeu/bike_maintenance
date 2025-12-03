@@ -6,23 +6,26 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: bike_app
+    restart: unless-stopped
     working_dir: /var/www/html
     volumes:
-      - ./:/var/www/html
-      - /var/www/html/vendor  # 👈 CORRECCIÓN: Protege la carpeta vendor de la imagen
+      # Solo montamos lo que necesita persistir o configuración
+      - ./.env:/var/www/html/.env
+      - ./storage:/var/www/html/storage
     depends_on:
       - mysql
     networks:
       - bike_network
-    command: ["php-fpm"]
 
   web:
     image: nginx:alpine
     container_name: bike_web
+    restart: unless-stopped
     ports:
       - "80:80"
     volumes:
-      - ./:/var/www/html
+      # Nginx necesita ver los archivos públicos para servirlos (css, js, imágenes)
+      - ./:/var/www/html 
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - app
@@ -32,15 +35,17 @@ services:
   mysql:
     image: mysql:8.0
     container_name: bike_db
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: bike_maintenance
-      MYSQL_USER: beor
-      MYSQL_PASSWORD: aeiouguillem..
+      # Usamos las variables del .env generado por GitHub Action
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
     ports:
-      - "3306:3306"
+      - "${DB_PORT}:3306"
     volumes:
-      - db-data:/var/lib/mysql 
+      - db-data:/var/lib/mysql
     networks:
       - bike_network
 

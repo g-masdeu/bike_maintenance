@@ -43,7 +43,7 @@ unset($__defined_vars, $__key, $__value); ?>
 
 <body class="min-h-screen bg-gray-100 dark:bg-gray-900">
 
-    <!--[if BLOCK]><![endif]--><?php if(auth()->guard()->check()): ?>
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
         
         <div
             class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700 hidden lg:flex flex-col">
@@ -83,7 +83,7 @@ unset($__defined_vars, $__key, $__value); ?>
                     </svg>
                     Inici
                 </a>
-                <!--[if BLOCK]><![endif]--><?php if(Route::has('dashboard')): ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Route::has('dashboard')): ?>
                     <a href="<?php echo e(route('home')); ?>"
                         class="flex items-center px-2 py-2 text-sm font-medium rounded hover:bg-gray-200 dark:hover:bg-gray-700 <?php echo e(request()->routeIs('home') ? 'bg-gray-200 dark:bg-gray-700' : ''); ?>">
                         <svg class="w-5 h-5 mr-3 text-gray-500 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
@@ -91,7 +91,7 @@ unset($__defined_vars, $__key, $__value); ?>
                         </svg>
                         Tauler
                     </a>
-                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </nav>
 
             
@@ -121,12 +121,12 @@ unset($__defined_vars, $__key, $__value); ?>
                 </div>
 
                 <div class="mt-4 space-y-2">
-                    <!--[if BLOCK]><![endif]--><?php if(Route::has('settings.profile')): ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Route::has('settings.profile')): ?>
                         <a href="<?php echo e(route('settings.profile')); ?>"
                             class="flex items-center px-2 py-2 text-sm font-medium rounded hover:bg-gray-200 dark:hover:bg-gray-700">
                             Configuració
                         </a>
-                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                     <form method="POST" action="<?php echo e(route('logout')); ?>">
                         <?php echo csrf_field(); ?>
@@ -138,12 +138,12 @@ unset($__defined_vars, $__key, $__value); ?>
                 </div>
             </div>
         </div>
-    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
     
     <header
         class="lg:hidden flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <!--[if BLOCK]><![endif]--><?php if(auth()->guard()->check()): ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
             <button id="mobile-menu-toggle" class="text-gray-500 dark:text-gray-300">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -157,16 +157,16 @@ unset($__defined_vars, $__key, $__value); ?>
                 </div>
                 <span class="text-sm font-medium text-gray-900 dark:text-white"><?php echo e(auth()->user()->name); ?></span>
             </div>
-        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
     </header>
 
     
     <div class="settings-container w-full">
         <div class="flex flex-col mb-6">
             <h2 class="text-2xl font-bold"><?php echo e($heading); ?></h2>
-            <!--[if BLOCK]><![endif]--><?php if($subheading): ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($subheading): ?>
                 <p class="text-gray-600 dark:text-gray-400"><?php echo e($subheading); ?></p>
-            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         </div>
 
         <?php echo e($slot); ?>

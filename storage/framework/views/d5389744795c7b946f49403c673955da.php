@@ -101,25 +101,25 @@ unset($__defined_vars, $__key, $__value); ?>
     <header class="fonsHeaderFooter flex justify-between items-center p-4 border-b border-white/20 relative">
         <div class="flex flex-col">
             <h1 class="text-lg font-semibold"><?php echo e($heading); ?></h1>
-            <?php if($subheading): ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($subheading): ?>
                 <p class="text-sm opacity-90"><?php echo e($subheading); ?></p>
-            <?php endif; ?>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         </div>
 
-        <?php if(auth()->guard()->check()): ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
             <div class="relative" x-data="{ open: false }">
                 <button @click="open = !open"
                     class="w-10 h-10 rounded-full overflow-hidden border-2 border-white/50 hover:border-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-white/70 transition-all"
                     aria-label="Menú de usuario" aria-expanded="false" x-bind:aria-expanded="open.toString()">
 
-                    <?php if(Auth::user()->profile_photo_path): ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Auth::user()->profile_photo_path): ?>
                         <img src="<?php echo e(asset('storage/' . Auth::user()->profile_photo_path)); ?>"
                             alt="Avatar de <?php echo e(Auth::user()->name); ?>" class="w-full h-full object-cover">
                     <?php else: ?>
                         <img src="<?php echo e(asset('images/default-avatar.png')); ?>" alt="Avatar por defecto"
                             class="w-full h-full object-cover"
                             onerror="this.src='https://ui-avatars.com/api/?name=<?php echo e(urlencode(Auth::user()->name)); ?>&background=0D8ABC&color=fff'">
-                    <?php endif; ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </button>
 
                 <div x-show="open" x-transition:enter="transition ease-out duration-200"
@@ -146,24 +146,24 @@ unset($__defined_vars, $__key, $__value); ?>
                     </div>
                 </div>
             </div>
-        <?php endif; ?>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
     </header>
 
     <!-- Contenido principal -->
     <main class="flex-grow container mx-auto p-4">
-        <?php if(session('success')): ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>
             <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
                 <?php echo e(session('success')); ?>
 
             </div>
-        <?php endif; ?>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-        <?php if(session('error')): ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('error')): ?>
             <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
                 <?php echo e(session('error')); ?>
 
             </div>
-        <?php endif; ?>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
         <?php echo $__env->yieldContent('content'); ?>
     </main>

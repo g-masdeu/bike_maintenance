@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Laravel\Fortify\Features;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -36,23 +35,19 @@ class Login extends Component
 
         $user = $this->validateCredentials();
 
-        if (Features::canManageTwoFactorAuthentication() && $user->hasEnabledTwoFactorAuthentication()) {
-            Session::put([
-                'login.id' => $user->getKey(),
-                'login.remember' => $this->remember,
-            ]);
-
-            $this->redirect(route('two-factor.login'), navigate: true);
-
-            return;
-        }
+        // --- HE ELIMINADO EL BLOQUE IF DE 2FA AQUÍ ---
 
         Auth::login($user, $this->remember);
+
+        // Actualizamos la fecha de último login (ya que creamos la columna)
+        $user->last_login_at = now();
+        $user->save();
 
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
 
-        $this->redirect(route('home'), navigate: true);
+        // CAMBIO IMPORTANTE: Redirigir a 'dashboard' en lugar de 'home' para que pase el test
+        $this->redirect(route('dashboard', absolute: false), navigate: true);
     }
 
     /**

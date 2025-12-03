@@ -72,11 +72,11 @@
     <h1>Verifica el teu correu electrònic</h1>
     <p>Si us plau, verifica la teva adreça de correu electrònic fent clic al link que t’hem enviat.</p>
 
-    <!--[if BLOCK]><![endif]--><?php if(session('status') == 'verification-link-sent'): ?>
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('status') == 'verification-link-sent'): ?>
         <div class="status-message status-success">
             S’ha enviat un nou link de verificació al correu electrònic que vas proporcionar durant el registre.
         </div>
-    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
     <flux:button wire:click="sendVerification">Torna a enviar el correu de verificació</flux:button>
 

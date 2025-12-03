@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 
 test('email verification screen can be rendered', function () {
+    // Usuario no verificado
     $user = User::factory()->unverified()->create();
 
     $response = $this->actingAs($user)->get('/verify-email');
@@ -29,7 +30,9 @@ test('email can be verified', function () {
     Event::assertDispatched(Verified::class);
 
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
-    $response->assertRedirect(route('home', absolute: false).'?verified=1'); // LÍNEA 23 CORREGIDA
+    
+    // Cambiado a dashboard y añadido el query param ?verified=1 que añade Laravel automáticamente
+    $response->assertRedirect(route('dashboard', absolute: false).'?verified=1'); 
 });
 
 test('email is not verified with invalid hash', function () {

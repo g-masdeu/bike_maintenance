@@ -27,14 +27,14 @@
             
             <div class="flex items-center gap-4">
                 <div class="w-20 h-20 rounded-full overflow-hidden border border-zinc-300 dark:border-zinc-700">
-                    <!--[if BLOCK]><![endif]--><?php if(auth()->user()->profile_photo_path): ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->user()->profile_photo_path): ?>
                         <img src="<?php echo e(asset('storage/' . auth()->user()->profile_photo_path)); ?>" alt="Foto de perfil" class="w-full h-full object-cover">
                     <?php else: ?>
                         <div class="flex items-center justify-center w-full h-full bg-zinc-200 dark:bg-zinc-700 text-zinc-500">
                             <?php echo e(strtoupper(substr(auth()->user()->name,0,1))); ?>
 
                         </div>
-                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </div>
                 <flux:input wire:model="profile_photo" :label="__('Foto de perfil')" type="file" accept="image/*"/>
             </div>
@@ -46,7 +46,7 @@
             <div>
                 <flux:input wire:model="email" :label="__('Correu electrònic')" type="email" required autocomplete="email" />
 
-                <!--[if BLOCK]><![endif]--><?php if(auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !auth()->user()->hasVerifiedEmail()): ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !auth()->user()->hasVerifiedEmail()): ?>
                     <div>
                         <flux:text class="mt-4">
                             <?php echo e(__('El teu correu electrònic no està verificat.')); ?>
@@ -58,14 +58,14 @@
                             </flux:link>
                         </flux:text>
 
-                        <!--[if BLOCK]><![endif]--><?php if(session('status') === 'verification-link-sent'): ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('status') === 'verification-link-sent'): ?>
                             <flux:text class="mt-2 font-medium !dark:text-green-400 !text-green-600">
                                 <?php echo e(__('S\'ha enviat un nou enllaç de verificació al teu correu electrònic.')); ?>
 
                             </flux:text>
-                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </div>
-                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
 
             
@@ -103,7 +103,11 @@ $__split = function ($name, $params = []) {
 };
 [$__name, $__params] = $__split('settings.delete-user-form', []);
 
-$__html = app('livewire')->mount($__name, $__params, 'lw-3686427182-0', $__slots ?? [], get_defined_vars());
+$key = null;
+
+$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-3686427182-0', null);
+
+$__html = app('livewire')->mount($__name, $__params, $key);
 
 echo $__html;
 

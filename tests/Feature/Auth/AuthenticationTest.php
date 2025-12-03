@@ -2,7 +2,6 @@
 
 use App\Livewire\Auth\Login;
 use App\Models\User;
-use Laravel\Fortify\Features;
 use Livewire\Livewire;
 
 test('login screen can be rendered', function () {
@@ -12,7 +11,10 @@ test('login screen can be rendered', function () {
 });
 
 test('users can authenticate using the login screen', function () {
-    $user = User::factory()->withoutTwoFactor()->create();
+    // IMPORTANTE: Creamos un usuario VERIFICADO para que pueda entrar al dashboard
+    $user = User::factory()->create([
+        'email_verified_at' => now(),
+    ]);
 
     $response = Livewire::test(Login::class)
         ->set('email', $user->email)
@@ -21,9 +23,24 @@ test('users can authenticate using the login screen', function () {
 
     $response
         ->assertHasNoErrors()
-        ->assertRedirect(route('home', absolute: false)); 
+        ->assertRedirect(route('dashboard', absolute: false)); // Cambiado a dashboard
 
     $this->assertAuthenticated();
+});
+
+test('users can authenticate using the standard post request (modal)', function () {
+    // Este test prueba tu MODAL real (que usa el controlador, no livewire)
+    $user = User::factory()->create([
+        'email_verified_at' => now(),
+    ]);
+
+    $response = $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertAuthenticated();
+    $response->assertRedirect(route('dashboard', absolute: false));
 });
 
 test('users can not authenticate with invalid password', function () {
@@ -39,41 +56,12 @@ test('users can not authenticate with invalid password', function () {
     $this->assertGuest();
 });
 
-test('users with two factor enabled are redirected to two factor challenge', function () {
-    if (! Features::canManageTwoFactorAuthentication()) {
-        $this->markTestSkipped('Two-factor authentication is not enabled.');
-    }
-
-    Features::twoFactorAuthentication([
-        'confirm' => true,
-        'confirmPassword' => true,
-    ]);
-
-    $user = User::factory()->create();
-
-    $user->forceFill([
-        'two_factor_secret' => encrypt('test-secret'),
-        'two_factor_recovery_codes' => encrypt(json_encode(['code1', 'code2'])),
-        'two_factor_confirmed_at' => now(),
-    ])->save();
-
-    $response = Livewire::test('auth.login')
-        ->set('email', $user->email)
-        ->set('password', 'password')
-        ->call('login');
-
-    $response->assertRedirect(route('two-factor.login'));
-    $response->assertSessionHas('login.id', $user->id);
-    $this->assertGuest();
-});
-
 test('users can logout', function () {
     $user = User::factory()->create();
 
     $response = $this
         ->actingAs($user)
-        ->withSession(['_token' => 'testtoken'])
-        ->post('/logout', ['_token' => 'testtoken']);
+        ->post('/logout');
 
     $response->assertRedirect('/');
 

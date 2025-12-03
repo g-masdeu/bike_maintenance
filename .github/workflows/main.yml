@@ -75,17 +75,14 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
-      # Paso 1: Detener contenedores por si estuvieran bloqueando archivos
       - name: 🐳 Detener contenedores anteriores
         run: docker compose down -v || true
 
-      # Paso 2: Limpiar y restaurar la propiedad
       - name: 🧹 Limpiar directorio y restaurar propiedad
         run: |
           sudo chown -R $(whoami):$(whoami) ${{ github.workspace }} || true
           rm -rf ${{ github.workspace }}/* || true
 
-      # Paso 3: Descargar el código sin limpieza automática
       - name: ⬇️ Descargar código
         uses: actions/checkout@v4
         with:
@@ -93,35 +90,41 @@ jobs:
 
       - name: 🚀 Desplegar con Docker
         env:
-          # Variables de la aplicación para el script
+          # Variables generales
           APP_KEY: ${{ secrets.APP_KEY }}
           APP_URL: ${{ secrets.APP_URL }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          # Base de datos
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          # Correo (NUEVO)
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
         run: |
-          # 1. 🔑 CORRECCIÓN DE SECRETS: Exportar variables para que el shell las expanda correctamente.
-          export DB_PORT="${{ secrets.DB_PORT }}"
-          export DB_DATABASE="${{ secrets.DB_DATABASE }}"
-          export DB_USERNAME="${{ secrets.DB_USERNAME }}"
-          export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
-          export APP_KEY="${{ secrets.APP_KEY }}"
-          export APP_URL="${{ secrets.APP_URL }}"
+          # Exportar variables explícitamente por seguridad en el shell
+          export APP_KEY="$APP_KEY"
+          export APP_URL="$APP_URL"
+          export DB_PORT="$DB_PORT"
+          export DB_DATABASE="$DB_DATABASE"
+          export DB_USERNAME="$DB_USERNAME"
+          export DB_PASSWORD="$DB_PASSWORD"
+          export MAIL_USERNAME="$MAIL_USERNAME"
+          export MAIL_PASSWORD="$MAIL_PASSWORD"
           
-          # Crear archivo nginx/default.conf
+          # Crear carpeta nginx si no existe
           mkdir -p nginx
-          # 2. CORRECCIÓN SINTAXIS: Eliminar comillas simples en EOL para permitir expansión de variables.
+
+          # Crear configuración Nginx
           cat > nginx/default.conf <<EOL
           server {
             listen 80;
             server_name _;
-
             root /var/www/html/public;
             index index.php;
-
             location / {
               try_files \$uri \$uri/ /index.php?\$is_args\$query_string;
             }
-
             location ~ \.php$ {
               fastcgi_pass app:9000;
               fastcgi_index index.php;
@@ -131,40 +134,69 @@ jobs:
           }
           EOL
 
-          # Crear .env de producción
-          # 3. CORRECCIÓN SINTAXIS: Eliminar comillas simples en EOL.
+          # ---------------------------------------------------------
+          # GENERAR .ENV DE PRODUCCIÓN (Con configuración de correo)
+          # ---------------------------------------------------------
           cat > .env <<EOL
           APP_NAME=Bike_Maintenance
           APP_ENV=production
           APP_KEY=${APP_KEY}
           APP_DEBUG=false
           APP_URL=${APP_URL}
+          
           APP_LOCALE=es
           APP_FALLBACK_LOCALE=es
           APP_FAKER_LOCALE=es_ES
+          
           PHP_CLI_SERVER_WORKERS=4
           BCRYPT_ROUNDS=12
+          
+          LOG_CHANNEL=stack
+          LOG_LEVEL=error
+          
           DB_CONNECTION=mysql
-          DB_HOST=mysql         
-          DB_PORT=${DB_PORT}
+          DB_HOST=mysql
+          DB_PORT=3306
           DB_DATABASE=${DB_DATABASE}
-          DB_USERNAME=${DB_USERNAME} 
+          DB_USERNAME=${DB_USERNAME}
           DB_PASSWORD=${DB_PASSWORD}
+          
           SESSION_DRIVER=database
+          SESSION_LIFETIME=120
+          SESSION_ENCRYPT=false
+          SESSION_PATH=/
+          SESSION_DOMAIN=null
+          
+          BROADCAST_CONNECTION=log
+          FILESYSTEM_DISK=local
+          
+          # IMPORTANTE: Sync para enviar correos al instante sin worker
+          QUEUE_CONNECTION=sync
+          
           CACHE_STORE=database
-          GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-          GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-          GOOGLE_REDIRECT=${APP_URL}/oauth/google/callback
+          
+          # CONFIGURACIÓN DE CORREO GMAIL
+          MAIL_MAILER=smtp
+          MAIL_HOST=smtp.gmail.com
+          MAIL_PORT=587
+          MAIL_USERNAME=${MAIL_USERNAME}
+          MAIL_PASSWORD=${MAIL_PASSWORD}
+          MAIL_ENCRYPTION=tls
+          MAIL_FROM_ADDRESS="${MAIL_USERNAME}"
+          MAIL_FROM_NAME="Bike Maintenance"
+          
+          VITE_APP_NAME="Bike Maintenance"
           EOL
 
-          # Detener y levantar contenedores
+          # Levantar Docker
+          echo "Levantando contenedores..."
           docker compose down || true
           docker compose up -d --build
 
-          # 4. CORRECCIÓN ESPERA: Espera activa hasta que MySQL esté disponible (soluciona Connection refused).
+          # Esperar a MySQL
           echo "Esperando a que la base de datos esté lista..."
           docker compose exec -T app sh -c '
-            max_retries=15; 
+            max_retries=30; 
             retry_count=0;
             while ! nc -z mysql 3306 && [ $retry_count -lt $max_retries ]; do 
               echo "MySQL no está disponible aún. Esperando 2 segundos..."; 
@@ -175,16 +207,21 @@ jobs:
               echo "Error: MySQL no inició a tiempo."
               exit 1
             fi
-            echo "MySQL está listo. Continuar con las migraciones."
+            echo "MySQL está listo."
           '
           
-          # 5. CORRECCIÓN PERMISOS: Usar --user root para evitar Operation not permitted.
+          # Permisos
           docker compose exec -T --user root app chmod -R 777 storage bootstrap/cache
 
-          # Ejecutar comandos de Laravel 
-          docker compose exec -T app php artisan migrate --force
+          # Comandos finales de Laravel
+          # NOTA: Usamos migrate:fresh la primera vez para limpiar tablas viejas de OAuth
+          # Después puedes cambiarlo a migrate --force
+          docker compose exec -T app php artisan migrate:fresh --force
+          
           docker compose exec -T app php artisan cache:clear
           docker compose exec -T app php artisan config:cache
           docker compose exec -T app php artisan route:cache
           docker compose exec -T app php artisan view:cache
           docker compose exec -T app php artisan event:cache
+          
+          echo "✅ Despliegue completado."

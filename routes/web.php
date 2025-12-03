@@ -2,15 +2,14 @@
 
 use App\Http\Controllers\BicicletaController;
 use App\Http\Controllers\MantenimientoController;
-use App\Http\Controllers\OAuthController;
 use App\Http\Controllers\LanguageController;
+// He eliminado el OAuthController que ya no existe
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\TwoFactor;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
 
 /*
 |--------------------------------------------------------------------------
@@ -19,16 +18,14 @@ use Illuminate\Support\Facades\Auth;
 */
 
 Route::get('/', function () {
-    /** @var \Illuminate\Contracts\Auth\Guard $auth */ // <-- ¡Añade esta línea!
-    $auth = auth();
-
-    return Auth::check()        
+    return Auth::check()
         ? redirect('/dashboard')
         : view('welcome');
 })->name('home');
 
-// Tu dashboard (sin cambios)
-Route::middleware('auth')->get('/dashboard', function (Request $request) {
+// CAMBIO: Añadido middleware 'verified' para obligar a confirmar email
+Route::middleware(['auth', 'verified'])->get('/dashboard', function (Request $request) {
+    // Nota: Asegúrate de que la relación 'bicicletas' exista en tu modelo User
     $bicicletas = $request->user()->bicicletas;
     return view('dashboard', compact('bicicletas'));
 })->name('dashboard');
@@ -64,7 +61,14 @@ Route::middleware('auth')->prefix('settings')->group(function () {
         $user->fill($request->only('name', 'email'));
 
         if ($request->hasFile('profile_photo')) {
-            $user->profile_photo_path = $request->file('profile_photo')->store('profile-photos', 'public');
+            // CORRECCIÓN: Tu migración usa 'profile_photo', no 'profile_photo_path'
+            $path = $request->file('profile_photo')->store('profile-photos', 'public');
+            $user->profile_photo = $path;
+        }
+
+        // Si el email cambia, invalidamos la verificación para que tenga que confirmar de nuevo
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
         $user->save();
@@ -76,7 +80,7 @@ Route::middleware('auth')->prefix('settings')->group(function () {
     Route::get('password', Password::class)->name('settings.password');
     Route::get('appearance', Appearance::class)->name('settings.appearance');
 
-    // Two-Factor Authentication (requires password confirmation)
+    // Two-Factor (Si usas 2FA por código TOTP con Livewire, déjalo. Si no, puedes borrarlo).
     Route::middleware('password.confirm')->get('two-factor', TwoFactor::class)
         ->name('two-factor.show');
 });
@@ -86,6 +90,7 @@ Route::middleware('auth')->prefix('settings')->group(function () {
 | Bicicletas & Mantenimientos
 |--------------------------------------------------------------------------
 */
+// Este grupo ya tenía 'verified', ¡perfecto!
 Route::middleware(['auth', 'verified'])->prefix('bicicletas')->group(function () {
 
     // Bicicletas CRUD
@@ -102,19 +107,6 @@ Route::middleware(['auth', 'verified'])->prefix('bicicletas')->group(function ()
         ->name('bicicletas.mantenimientos.store');
 });
 
-/*
-|--------------------------------------------------------------------------
-| OAuth Login (Google / GitHub)
-|--------------------------------------------------------------------------
-*/
-Route::prefix('oauth')->group(function () {
-    Route::get('{provider}/redirect', [OAuthController::class, 'redirect'])
-        ->where('provider', 'google|github')
-        ->name('oauth.redirect');
-
-    Route::get('{provider}/callback', [OAuthController::class, 'callback'])
-        ->where('provider', 'google|github')
-        ->name('oauth.callback');
-});
+// He eliminado completamente el bloque de rutas OAuth
 
 require __DIR__ . '/auth.php';

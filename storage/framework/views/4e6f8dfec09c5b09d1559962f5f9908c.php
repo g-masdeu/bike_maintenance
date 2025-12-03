@@ -32,7 +32,7 @@
     
     <div class="w-full max-w-5xl">
         <div class="grid gap-4">
-            <?php $__currentLoopData = $bicicletas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $bicicleta): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $bicicletas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $bicicleta): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow flex justify-between items-center">
                     <div>
                         <div class="font-bold text-lg text-gray-900 dark:text-gray-100">
@@ -61,7 +61,7 @@
                         </button>
                     </div>
                 </div>
-            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         </div>
     </div>
 

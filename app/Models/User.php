@@ -2,72 +2,54 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Bicicleta;
 
-class User extends Authenticatable
+// 2. Implementar MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable, TwoFactorAuthenticatable, HasApiTokens;
+    use HasApiTokens, HasFactory, Notifiable;
 
+    /**
+     * Los atributos que se pueden asignar masivamente.
+     * He añadido los nuevos campos que creamos en la migración.
+     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'phone',
         'role',
         'is_active',
-        'profile_photo_path',
+        'profile_photo',
+        'last_login_at',
     ];
 
+    /**
+     * Atributos ocultos (no cambian).
+     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    /**
+     * Casts para tipos de datos.
+     * Añadimos is_active y last_login_at para que Laravel los trate bien.
+     */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_active' => 'boolean',
+        'last_login_at' => 'datetime',
     ];
 
-    // Relació amb bicicletes
     public function bicicletas()
     {
         return $this->hasMany(Bicicleta::class);
-    }
-
-    public function isAdmin(): bool
-    {
-        return $this->role === 'admin';
-    }
-
-    // Método para mostrar iniciales en edit profile
-    public function initials(): string
-    {
-        $names = explode(' ', $this->name);
-        $initials = '';
-
-        foreach ($names as $n) {
-            $initials .= mb_substr($n, 0, 1);
-        }
-
-        return strtoupper($initials);
-    }
-
-    public function getProfilePhotoUrlAttribute()
-    {
-        return $this->profile_photo_path
-            ? asset('storage/' . $this->profile_photo_path)
-            : asset('/images/default-avatar.png');
-    }
-
-    public function oauthAccounts()
-    {
-        return $this->hasMany(OAuthAccount::class);
-    }
-
-    public function has2FAEnabled()
-    {
-        return !is_null($this->two_factor_secret);
     }
 }

@@ -21,6 +21,8 @@
             font-family: Arial, sans-serif;
             background: linear-gradient(to bottom right, #f5f5f5, #ffffff);
             color: #333;
+            display: flex;
+            /* IMPORTANTE: display flex para que el footer baje */
             flex-direction: column;
         }
 
@@ -59,6 +61,7 @@
             font-size: 0.85rem;
             cursor: pointer;
             transition: color 0.2s;
+            color: white;
         }
 
         nav a.button {
@@ -83,7 +86,6 @@
             text-align: center;
             padding: 1rem;
             min-height: 100%;
-            max-height: 100%;
         }
 
         .hero-container h2 {
@@ -165,8 +167,6 @@
             padding: 1rem 0;
             background: #fafafa;
             border-top: 1px solid #ddd;
-            position: fixed;
-            bottom: 0;
             width: 100%;
         }
 
@@ -383,64 +383,6 @@
             cursor: not-allowed;
         }
 
-        .divider {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin: 1.5rem 0;
-            color: #999;
-            font-size: 0.85rem;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: #ddd;
-        }
-
-        .oauth-btn img {
-            width: 20px;
-            height: 20px;
-            vertical-align: middle;
-        }
-
-        .oauth-buttons {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .oauth-btn {
-            flex: 1;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 0.375rem;
-            background: #fff;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: all 0.2s;
-            padding: 0.5rem 0.75rem;
-            text-decoration: none;
-            height: 40px;
-        }
-
-        .oauth-btn:hover {
-            border-color: #1d4ed8;
-            background: #f3f4f6;
-        }
-
-        .oauth-btn.google:hover {
-            color: #1f2937;
-        }
-
-
-
-        .oauth-btn.github:hover {
-            color: #1f2937;
-        }
-
         .switch-modal {
             text-align: center;
             font-size: 0.85rem;
@@ -493,22 +435,19 @@
         </nav>
     </header>
 
-    <!-- Hero -->
     <!-- Contenido principal -->
     <main>
         <!-- Hero -->
-        <section class="hero">
-            <div class="hero-container">
-                <h2><?php echo e(__('messages.hero_title') ?: 'Keep Your Bike Perfect'); ?></h2>
-                <p><?php echo e(__('messages.hero_text') ?: "Track maintenance, monitor kilometers, and extend your bike's lifespan."); ?>
+        <section class="hero-container">
+            <h2><?php echo e(__('messages.hero_title') ?: 'Keep Your Bike Perfect'); ?></h2>
+            <p><?php echo e(__('messages.hero_text') ?: "Track maintenance, monitor kilometers, and extend your bike's lifespan."); ?>
 
-                </p>
-                <div class="hero-buttons">
-                    <a class="primary"
-                        onclick="openModal('registerModal')"><?php echo e(__('messages.start_now') ?: 'Start Now'); ?></a>
-                    <a class="secondary"
-                        onclick="openModal('loginModal')"><?php echo e(__('messages.already_account') ?: 'Sign In'); ?></a>
-                </div>
+            </p>
+            <div class="buttons">
+                <a class="primary"
+                    onclick="openModal('registerModal')"><?php echo e(__('messages.start_now') ?: 'Start Now'); ?></a>
+                <a class="secondary"
+                    onclick="openModal('loginModal')"><?php echo e(__('messages.already_account') ?: 'Sign In'); ?></a>
             </div>
         </section>
 
@@ -553,7 +492,8 @@
                     <input type="password" id="login-password" name="password" placeholder="Contrasenya" required>
                     <div class="forgot-password-link">
                         <a href="<?php echo e(route('password.request')); ?>"
-                            onclick="event.preventDefault(); closeModal('loginModal');">Has oblidat la contrasenya?</a>
+                            onclick="event.preventDefault(); closeModal('loginModal'); window.location.href='<?php echo e(route('password.request')); ?>'">Has
+                            oblidat la contrasenya?</a>
                     </div>
                 </div>
 
@@ -564,16 +504,6 @@
 
                 <button type="submit">Inicia sessió</button>
             </form>
-
-            <div class="divider">o</div>
-
-            <div class="oauth-buttons">
-                <a href="<?php echo e(route('oauth.redirect', 'google')); ?>" class="oauth-btn google"
-                    aria-label="Register with Google">
-                    <img src="/images/google_logo.png" alt="Google logo" />
-                </a>
-                
-            </div>
 
             <div class="switch-modal">
                 No tens compte?
@@ -623,17 +553,6 @@
                 <button type="submit">Crea el compte</button>
             </form>
 
-            <div class="divider">o</div>
-
-            <div class="oauth-buttons">
-                <a href="<?php echo e(route('oauth.redirect', 'google')); ?>" class="oauth-btn google"
-                    aria-label="Register with Google">
-                    <img src="/images/google_logo.png" alt="Google logo" />
-                    <span>Google</span>
-                </a>
-                <a href="<?php echo e(route('oauth.redirect', 'github')); ?>" class="oauth-btn github">GitHub</a>
-            </div>
-
             <div class="switch-modal">
                 Ja tens compte?
                 <button onclick="switchModals('registerModal', 'loginModal')">Inicia sessió</button>
@@ -678,27 +597,27 @@
 
         // Mostrar errores del servidor si existen
         document.addEventListener('DOMContentLoaded', () => {
-            <?php if($errors->any()): ?>
-                <?php if($errors->bag('default')->has('email')): ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($errors->any()): ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($errors->bag('default')->has('email')): ?>
                     openModal('loginModal');
                     document.getElementById('login-email-error').textContent = "<?php echo e($errors->first('email')); ?>";
                     document.getElementById('login-email-error').classList.add('show');
-                <?php endif; ?>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                <?php if($errors->bag('register')->has('email') || $errors->bag('register')->has('name')): ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($errors->bag('register')->has('email') || $errors->bag('register')->has('name')): ?>
                     openModal('registerModal');
                     <?php if($errors->bag('register')->has('name')): ?>
                         document.getElementById('register-name-error').textContent =
                             "<?php echo e($errors->first('name')); ?>";
                         document.getElementById('register-name-error').classList.add('show');
-                    <?php endif; ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     <?php if($errors->bag('register')->has('email')): ?>
                         document.getElementById('register-email-error').textContent =
                             "<?php echo e($errors->first('email')); ?>";
                         document.getElementById('register-email-error').classList.add('show');
-                    <?php endif; ?>
-                <?php endif; ?>
-            <?php endif; ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         });
     </script>
 </body>

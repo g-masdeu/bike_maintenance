@@ -18,28 +18,27 @@ RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-interacti
 FROM php:8.2-fpm-alpine
 
 # Dependencias y extensiones
+# Añadido libpng-dev y libjpeg-turbo-dev por si manipulas imágenes de bicis
 RUN apk update && apk add --no-cache \
-    icu sqlite-libs git unzip libzip-dev oniguruma-dev \
-    && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS icu-dev sqlite-dev \
+    icu-libs git unzip libzip-dev oniguruma-dev \
+    libpng-dev libjpeg-turbo-dev \
     && docker-php-ext-configure intl \
-    && docker-php-ext-install -j"$(nproc)" pdo_mysql pdo_sqlite bcmath intl mbstring zip \
-    && docker-php-ext-enable opcache \
-    && apk del .build-deps
+    && docker-php-ext-install -j"$(nproc)" pdo_mysql bcmath intl mbstring zip gd \
+    && docker-php-ext-enable opcache
 
-# Instalación de Composer en el Stage Final
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
+# Configurar directorio
 WORKDIR /var/www/html
 
-# Copiar archivos desde el builder que ya tiene Composer y NPM
+# Copiar archivos desde el builder (Tiene el código + vendor + public/build)
 COPY --from=composer_builder /app /var/www/html
 
-# Permisos
+# Permisos críticos (Storage y Cache deben ser escribibles)
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
 
-# Usuario no root
+# Cambiar al usuario www-data para seguridad
 USER www-data
 
 EXPOSE 9000
+CMD ["php-fpm"]

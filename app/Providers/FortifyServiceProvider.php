@@ -23,14 +23,12 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Fortify::twoFactorChallengeView(fn () => view('livewire.auth.two-factor-challenge'));
-        Fortify::confirmPasswordView(fn () => view('livewire.auth.confirm-password'));
+        // Aquí solían estar las vistas de 2FA y Confirmación de contraseña.
+        // Las hemos quitado porque ya no usas esa lógica.
 
-        RateLimiter::for('two-factor', function (Request $request) {
-            return Limit::perMinute(5)->by($request->session()->get('login.id'));
-        });
+        // Limitador de tasa para el Login (5 intentos por minuto)
         RateLimiter::for('login', function (Request $request) {
              return Limit::perMinute(5)->by(strtolower($request->email) . '|' . $request->ip());
         });
-    }    
+    }
 }

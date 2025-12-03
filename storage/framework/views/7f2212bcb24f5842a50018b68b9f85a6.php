@@ -87,7 +87,7 @@
                           text-gray-900 dark:text-gray-100
                           focus:ring-2 focus:ring-gray-400 focus:border-transparent
                           transition-all duration-200">
-            <?php $__errorArgs = ['name'];
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['name'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -96,7 +96,7 @@ $message = $__bag->first($__errorArgs[0]); ?>
             <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
-unset($__errorArgs, $__bag); ?>
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
           </div>
 
           
@@ -115,7 +115,7 @@ unset($__errorArgs, $__bag); ?>
                           text-gray-900 dark:text-gray-100
                           focus:ring-2 focus:ring-gray-400 focus:border-transparent
                           transition-all duration-200">
-            <?php $__errorArgs = ['email'];
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['email'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -124,7 +124,7 @@ $message = $__bag->first($__errorArgs[0]); ?>
             <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
-unset($__errorArgs, $__bag); ?>
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
           </div>
 
           
@@ -165,7 +165,11 @@ $__split = function ($name, $params = []) {
 };
 [$__name, $__params] = $__split('settings.password', []);
 
-$__html = app('livewire')->mount($__name, $__params, 'lw-4229844604-0', $__slots ?? [], get_defined_vars());
+$key = null;
+
+$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-4229844604-0', null);
+
+$__html = app('livewire')->mount($__name, $__params, $key);
 
 echo $__html;
 
