@@ -18,11 +18,20 @@ RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-interacti
 FROM php:8.2-fpm-alpine
 
 # Dependencias y extensiones
-# Añadido libpng-dev y libjpeg-turbo-dev por si manipulas imágenes de bicis
+# CAMBIO IMPORTANTE: Añadido 'icu-dev' que es obligatorio para compilar 'intl'
+# También he añadido 'linux-headers' que a veces hace falta para sockets/xdebug
 RUN apk update && apk add --no-cache \
-    icu-libs git unzip libzip-dev oniguruma-dev \
-    libpng-dev libjpeg-turbo-dev \
+    git \
+    unzip \
+    libzip-dev \
+    oniguruma-dev \
+    icu-dev \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    linux-headers \
     && docker-php-ext-configure intl \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j"$(nproc)" pdo_mysql bcmath intl mbstring zip gd \
     && docker-php-ext-enable opcache
 
@@ -33,6 +42,7 @@ WORKDIR /var/www/html
 COPY --from=composer_builder /app /var/www/html
 
 # Permisos críticos (Storage y Cache deben ser escribibles)
+# www-data es el usuario por defecto de php-fpm
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
